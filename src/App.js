@@ -22,6 +22,18 @@ class SongScroller extends Component {
   }
 }
 
+class Metronome extends Component {
+  render () {
+    return (
+      <div>
+        <audio controls id='metronome'>
+          <source src="/metronome.wav" />
+        </audio>
+      </div>
+    )
+  }
+}
+
 class Song extends Component {
   constructor (props) {
     super(props)
@@ -34,22 +46,30 @@ class Song extends Component {
     }
   }
 
-  componentDidUnmount () {
+  componentWillUnmount () {
     clearInterval(this.beatUpdateInterval)
   }
 
   onPlay () {
     // TODO handle starts other than the start of song
     const startTime = Date.now()
+    const playedBeats = {}
     this.beatUpdateInterval = setInterval(() => {
       const elapsedMS = Date.now() - startTime
       const elapsedBeats = Math.floor(elapsedMS / this.beatLength)
       // TODO account for non-standard time signatures
-      this.setState({'measure': Math.floor(elapsedBeats / 4) + 1, 'beat': elapsedBeats % 4 + 1})
+      const loc = {'measure': Math.floor(elapsedBeats / 4) + 1, 'beat': elapsedBeats % 4 + 1}
+      if (!playedBeats[`${loc.measure}:${loc.beat}`]) {
+        this.setState(loc)
+        const audioElement = document.getElementById('metronome')
+        audioElement.currentTime = 0
+        audioElement.play()
+        playedBeats[`${loc.measure}:${loc.beat}`] = true
+      }
     }, 20)
   }
 
-  render (props) {
+  render () {
     return (
       <div id="song">
         <TimeBar title={this.props.title}
@@ -58,6 +78,7 @@ class Song extends Component {
                  onPlay={this.onPlay}
                  measure={this.state.measure}
                  beat={this.state.beat} />
+        <Metronome />
         <SongScroller />
       </div>
     )
@@ -71,7 +92,7 @@ Song.propTypes = {
 class App extends Component {
   render () {
     return (
-      <Song title="I won't back down" artist="Tom Petty" bars="140" bpm={100} />
+      <Song title="I won't back down" artist="Tom Petty & the Heartbreakers" bars="140" bpm={100} />
     )
   }
 }
