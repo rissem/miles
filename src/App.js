@@ -17,7 +17,51 @@ class TimeBar extends Component {
 class SongScroller extends Component {
   render () {
     return (
-      <h1>Song Scroller</h1>
+      <div id="songscroller">
+        <Measure bar={1}>
+          <Chord beat={1} name="E Minor" />
+          <Chord beat={3} name="D Major" />
+        </Measure>
+        <Measure bar={2}>
+          <Chord beat={1} name="G Major" />
+          <Lyric beat={4} words="Well I" />
+        </Measure>
+        <Measure>
+          <Chord beat={1} name="E Minor" />
+          <Chord beat={3} name="D Major" />
+          <Lyric beat={2} words="won't" />
+          <Lyric beat={4} words="back" />
+        </Measure>
+      </div>
+    )
+  }
+}
+
+class Chord extends Component {
+  render () {
+    return <span className="chord">{this.props.name}</span>
+  }
+}
+
+class Lyric extends Component {
+  render () {
+    return <span>{this.props.words}</span>
+  }
+}
+
+class Measure extends Component {
+  render () {
+    console.log(this.props.children)
+    return (
+      <span className="measure">
+        {beats}
+        <div>
+          {this.props.children.filter((child) => child.type === Chord)}
+        </div>
+        <div>
+          {this.props.children.filter((child) => child.type === Lyric)}
+        </div>
+      </span>
     )
   }
 }
@@ -92,7 +136,10 @@ Song.propTypes = {
 class App extends Component {
   render () {
     return (
-      <Song title="I won't back down" artist="Tom Petty & the Heartbreakers" bars="140" bpm={100} />
+      <Song title="I won't back down"
+        artist="Tom Petty & the Heartbreakers"
+        bars="140"
+        bpm={100} />
     )
   }
 }

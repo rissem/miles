@@ -17,3 +17,19 @@
 .App-intro {
   font-size: large;
 }
+
+.measure {
+  border: 1px solid black;
+  display: inline-flex;
+  width: 250px;
+  margin: 8px;
+  padding: 5px;
+}
+
+.chord {
+
+}
+
+.lyric {
+
+}
