@@ -54,7 +54,6 @@ class Measure extends Component {
     console.log(this.props.children)
     return (
       <span className="measure">
-        {beats}
         <div>
           {this.props.children.filter((child) => child.type === Chord)}
         </div>
