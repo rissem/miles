@@ -88,6 +88,14 @@ class Song extends Component {
       beat: 1,
       preBeats: 0
     }
+    this.startSong = this.startSong.bind(this)
+    this.print = this.print.bind(this)
+    this.chordRecorder = this.chordRecorder.bind(this)
+    this.beatRecorder = this.beatRecorder.bind(this)
+    this.lyricRecorder = this.lyricRecorder.bind(this)
+    this.beats = []
+    this.chords = []
+    this.lyrics = []
   }
 
   componentWillUnmount () {
@@ -117,7 +125,8 @@ class Song extends Component {
         newState.preBeats = prevState.preBeats + 1
         if (prevState.preBeats === 4) {
           newState.playing = true
-          this.startInterval()
+          clearInterval(this.interval)
+          this.interval = this.startInterval()
         }
         return newState
       }
@@ -128,9 +137,33 @@ class Song extends Component {
     })
   }
 
+  startSong () {
+    document.getElementsByTagName('audio')[0].play()
+    this.setState({songStart: Date.now()})
+  }
+
+  beatRecorder () {
+    this.beats = this.beats.concat({time: Date.now() - this.state.songStart})
+  }
+
+  chordRecorder (chord) {
+    this.chords = this.chords.concat({time: Date.now() - this.state.songStart, chord})
+  }
+
+  lyricRecorder (lyric) {
+    this.lyrics = this.lyrics.concat({time: Date.now() - this.state.songStart, lyric})
+  }
+
+  print () {
+    console.log(JSON.stringify({beats: this.beats, chords: this.chords, lyrics: this.lyrics}))
+  }
+
   render () {
     return (
       <div id="song">
+        <audio src={this.props.songUrl} />
+        <button onMouseDown={this.startSong} id="startSong">Start Song</button>
+        <button onClick={this.print}>Print</button>
         <TimeBar title={this.props.title}
                  artist={this.props.artist}
                  bars={this.props.bars}
@@ -138,6 +171,9 @@ class Song extends Component {
                  measure={this.state.measure}
                  beat={this.state.beat} />
         <SongScroller measure={this.state.measure} beat={this.state.beat} beatPercentage={this.state.beatPercentage}/>
+        <BeatRecorder songStart={this.state.songStart} beatRecorder={this.beatRecorder}/>
+        <ChordRecorder songStart={this.state.songStart} chordRecorder={this.chordRecorder}/>
+        <LyricRecorder songStart={this.state.songStart} lyricRecorder={this.lyricRecorder}/>
       </div>
     )
   }
@@ -151,40 +187,21 @@ class BeatRecorder extends Component {
   constructor (props) {
     super()
     this.onBeat = this.onBeat.bind(this)
-    this.state = {'beat': 0}
-    const interval = setInterval(() => {
-      let lastBeat = this.state[this.state.beat]
-      if (lastBeat && (Date.now() - lastBeat) > 5000) {
-        console.log('beat is over, beats are', this.state)
-        let i = 1
-        while (this.state[i]) {
-          i++
-          console.log(this.state[i] - this.state[i - 1])
-        }
-        clearInterval(interval)
-      }
-    }, 1000)
+    this.state = {'beats': []}
   }
 
   render () {
     return (
       <div>
-        <h2>Beat Recorder</h2>
-        <audio src={this.props.songUrl} />
-        <input type="button" value="beat" onMouseDown={this.onBeat}/>
+        <h1>Beat Recorder</h1>
+        <input type="button" value="beat" onMouseDown={this.props.beatRecorder}/>
       </div>
     )
   }
 
   onBeat () {
     this.setState((prevState, props) => {
-      const newState = {}
-      newState.beat = prevState.beat + 1
-      newState[prevState.beat + 1] = Date.now()
-      if (newState.beat === 1) {
-        document.getElementsByTagName('audio')[0].play()
-      }
-      return newState
+      return {beats: prevState.beats.concat(Date.now())}
     })
   }
 }
@@ -192,15 +209,8 @@ class BeatRecorder extends Component {
 class ChordRecorder extends Component {
   constructor (props) {
     super()
-    this.state = {chords: [], chordMapping: []}
+    this.state = {chords: []}
     this.addChord = this.addChord.bind(this)
-    this.startSong = this.startSong.bind(this)
-    this.selectChord = this.selectChord.bind(this)
-  }
-
-  startSong () {
-    document.getElementsByTagName('audio')[0].play()
-    this.setState({songStart: Date.now()})
   }
 
   addChord () {
@@ -208,12 +218,6 @@ class ChordRecorder extends Component {
       let chord = document.getElementById('chord').value
       document.getElementById('chord').value = ''
       return {chords: (prevState.chords || []).concat(chord)}
-    })
-  }
-
-  selectChord (chord) {
-    this.setState((prevState, props) => {
-      return {chordMapping: prevState.chordMapping.concat({chord, time: Date.now()})}
     })
   }
 
@@ -227,7 +231,7 @@ class ChordRecorder extends Component {
     )
 
     let chordButtons = this.state.chords.map((chord) => {
-      return <button onMouseDown={() => { this.selectChord(chord) }}
+      return <button onMouseDown={() => { this.props.chordRecorder(chord) }}
         style={{margin: 20}} key={chord}>{chord}</button>
     })
     let chordSetter = (
@@ -239,7 +243,6 @@ class ChordRecorder extends Component {
       <div>
         {chordAdder}
         {chordSetter}
-        <button onMouseDown={this.startSong} id="startSong">Start Song</button>
       </div>
     )
   }
@@ -248,15 +251,9 @@ class ChordRecorder extends Component {
 class LyricRecorder extends Component {
   constructor (props) {
     super()
-    this.state = {lyricMapping: []}
     this.convertLyrics = this.convertLyrics.bind(this)
-    this.startSong = this.startSong.bind(this)
     this.addLyric = this.addLyric.bind(this)
-  }
-
-  startSong () {
-    document.getElementsByTagName('audio')[0].play()
-    this.setState({songStart: Date.now()})
+    this.state = {}
   }
 
   convertLyrics () {
@@ -267,11 +264,8 @@ class LyricRecorder extends Component {
   addLyric () {
     this.setState((prevState, props) => {
       const lyric = prevState.lyrics.shift()
-      const lyricMapping = prevState.lyricMapping.concat({
-        lyric,
-        time: Date.now()
-      })
-      return {lyrics: prevState.lyrics, lyricMapping}
+      this.props.lyricRecorder(lyric)
+      return {lyrics: prevState.lyrics}
     })
   }
 
@@ -293,7 +287,6 @@ class LyricRecorder extends Component {
       return (
         <div>
           <h1>Lyric Recorder</h1>
-          <div key="songStarterDiv"><button key="songStarter" onClick={this.startSong}>Start song</button></div>
           {buttons}
         </div>
       )
@@ -308,10 +301,8 @@ class App extends Component {
         <Song title="I won't back down"
           artist="Tom Petty & the Heartbreakers"
           bars="140"
+          songUrl="/tomPettywillnotbackdown.m4a"
         />
-        <BeatRecorder songUrl="/tomPettywillnotbackdown.m4a" />
-        <ChordRecorder songUrl="/tomPettywillnotbackdown.m4a" />
-        <LyricRecorder songUrl="/tomPettywillnotbackdown.m4a" />
       </div>
     )
   }
