@@ -167,7 +167,6 @@ class BeatRecorder extends Component {
   }
 
   render () {
-    console.log(this.props)
     return (
       <div>
         <h2>Beat Recorder</h2>
@@ -190,6 +189,72 @@ class BeatRecorder extends Component {
   }
 }
 
+class ChordRecorder extends Component {
+  constructor (props) {
+    super()
+    this.state = {chords: [], chordMapping: []}
+    this.addChord = this.addChord.bind(this)
+    this.startSong = this.startSong.bind(this)
+    this.selectChord = this.selectChord.bind(this)
+  }
+
+  startSong () {
+    document.getElementsByTagName('audio')[0].play()
+    this.setState({songStart: Date.now()})
+  }
+
+  addChord () {
+    this.setState((prevState, props) => {
+      let chord = document.getElementById('chord').value
+      document.getElementById('chord').value = ''
+      return {chords: (prevState.chords || []).concat(chord)}
+    })
+  }
+
+  selectChord (chord) {
+    this.setState((prevState, props) => {
+      return {chordMapping: prevState.chordMapping.concat({chord, time: Date.now()})}
+    })
+  }
+
+  render () {
+    let chordAdder = (
+      <div>
+        <h1>Chord Recorder</h1>
+        <input id="chord" type="text" />
+        <button onClick={this.addChord}>Add chord</button>
+      </div>
+    )
+
+    let chordButtons = this.state.chords.map((chord) => {
+      return <button onMouseDown={() => { this.selectChord(chord) }}
+        style={{margin: 20}} key={chord}>{chord}</button>
+    })
+    let chordSetter = (
+      <div>
+        {chordButtons}
+      </div>
+    )
+    return (
+      <div>
+        {chordAdder}
+        {chordSetter}
+        <button onMouseDown={this.startSong} id="startSong">Start Song</button>
+      </div>
+    )
+  }
+}
+
+class LyricRecorder extends Component {
+  render () {
+    return (
+    <div>
+      <h1>Lyric Recorder</h1>
+    </div>
+    )
+  }
+}
+
 class App extends Component {
   render () {
     return (
@@ -198,7 +263,9 @@ class App extends Component {
           artist="Tom Petty & the Heartbreakers"
           bars="140"
         />
-        <BeatRecorder songUrl="/tomPettywillnotbackdown.m4a" onBeat={this.onBeat}/>
+        <BeatRecorder songUrl="/tomPettywillnotbackdown.m4a" />
+        <ChordRecorder songUrl="/tomPettywillnotbackdown.m4a" />
+        <LyricRecorder songUrl="/tomPettywillnotbackdown.m4a" />
       </div>
     )
   }
