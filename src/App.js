@@ -34,7 +34,9 @@ class SongScroller extends Component {
           <Lyric beat={2} words="won't" />
           <Lyric beat={4} words="back" />
         </Measure>
+        <div style={{clear: 'both'}} />
       </div>
+
     )
   }
 }
@@ -145,13 +147,59 @@ Song.propTypes = {
   bpm: React.PropTypes.number
 }
 
+class BeatRecorder extends Component {
+  constructor (props) {
+    super()
+    this.onBeat = this.onBeat.bind(this)
+    this.state = {'beat': 0}
+    const interval = setInterval(() => {
+      let lastBeat = this.state[this.state.beat]
+      if (lastBeat && (Date.now() - lastBeat) > 5000) {
+        console.log('beat is over, beats are', this.state)
+        let i = 1
+        while (this.state[i]) {
+          i++
+          console.log(this.state[i] - this.state[i - 1])
+        }
+        clearInterval(interval)
+      }
+    }, 1000)
+  }
+
+  render () {
+    console.log(this.props)
+    return (
+      <div>
+        <h2>Beat Recorder</h2>
+        <audio src={this.props.songUrl} />
+        <input type="button" value="beat" onMouseDown={this.onBeat}/>
+      </div>
+    )
+  }
+
+  onBeat () {
+    this.setState((prevState, props) => {
+      const newState = {}
+      newState.beat = prevState.beat + 1
+      newState[prevState.beat + 1] = Date.now()
+      if (newState.beat === 1) {
+        document.getElementsByTagName('audio')[0].play()
+      }
+      return newState
+    })
+  }
+}
+
 class App extends Component {
   render () {
     return (
-      <Song title="I won't back down"
-        artist="Tom Petty & the Heartbreakers"
-        bars="140"
-        bpm={100} />
+      <div>
+        <Song title="I won't back down"
+          artist="Tom Petty & the Heartbreakers"
+          bars="140"
+        />
+        <BeatRecorder songUrl="/tomPettywillnotbackdown.m4a" onBeat={this.onBeat}/>
+      </div>
     )
   }
 }
