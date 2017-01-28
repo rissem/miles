@@ -246,12 +246,58 @@ class ChordRecorder extends Component {
 }
 
 class LyricRecorder extends Component {
+  constructor (props) {
+    super()
+    this.state = {lyricMapping: []}
+    this.convertLyrics = this.convertLyrics.bind(this)
+    this.startSong = this.startSong.bind(this)
+    this.addLyric = this.addLyric.bind(this)
+  }
+
+  startSong () {
+    document.getElementsByTagName('audio')[0].play()
+    this.setState({songStart: Date.now()})
+  }
+
+  convertLyrics () {
+    const text = document.getElementById('pastedLyrics').value
+    this.setState({lyrics: text.split(/\s+/)})
+  }
+
+  addLyric () {
+    this.setState((prevState, props) => {
+      const lyric = prevState.lyrics.shift()
+      const lyricMapping = prevState.lyricMapping.concat({
+        lyric,
+        time: Date.now()
+      })
+      return {lyrics: prevState.lyrics, lyricMapping}
+    })
+  }
+
   render () {
-    return (
-    <div>
-      <h1>Lyric Recorder</h1>
-    </div>
-    )
+    if (!this.state.lyrics) {
+      return (
+      <div>
+        <h1>Lyric Recorder</h1>
+        <textarea id="pastedLyrics"></textarea>
+        <button onClick={this.convertLyrics}>Submit Lyrics</button>
+      </div>
+      )
+    } else {
+      let i = 0
+      const buttons = this.state.lyrics.map((lyric) => {
+        i += 1
+        return <button onClick={this.addLyric} key={lyric + i}>{lyric}</button>
+      })
+      return (
+        <div>
+          <h1>Lyric Recorder</h1>
+          <div key="songStarterDiv"><button key="songStarter" onClick={this.startSong}>Start song</button></div>
+          {buttons}
+        </div>
+      )
+    }
   }
 }
 
