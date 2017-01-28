@@ -7,5 +7,8 @@ module.exports = {
   plugins: [
     'standard',
     'react'
-  ]
+  ],
+  rules: {
+    'react/prop-types': 0
+  }
 };

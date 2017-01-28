@@ -20,16 +20,31 @@
 
 .measure {
   border: 1px solid black;
-  display: inline-flex;
-  width: 250px;
   margin: 8px;
   padding: 5px;
+  height: 100px;
+  float: left;
+  position: relative
 }
 
 .chord {
-
+  position: absolute;
 }
 
 .lyric {
+  position: absolute;
+}
 
+.beat {
+  border-right: 1px solid blue;
+  height: 100px;
+  position: absolute
+}
+
+#marker {
+  height:10px;
+  width: 10px;
+  top: 30px;
+  background-color: red;
+  position: absolute;
 }

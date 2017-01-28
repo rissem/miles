@@ -1,12 +1,14 @@
 import React, { Component } from 'react'
 import './App.css'
 
+const measureWidth = 400
+
 class TimeBar extends Component {
   render () {
     return (
       <div id="timeBar">
         <h3>{this.props.title} - {this.props.artist}</h3>
-        <button onClick={this.props.onPlay}>Play</button>
+        <button onMouseDown={this.props.onBeat}>Triangle</button>
         <div>{this.props.measure}</div>
         <div>{this.props.beat}</div>
       </div>
@@ -18,15 +20,15 @@ class SongScroller extends Component {
   render () {
     return (
       <div id="songscroller">
-        <Measure bar={1}>
+        <Measure bar={1} currentBar={this.props.measure} currentBeat={this.props.beat} beatPercentage={this.props.beatPercentage}>
           <Chord beat={1} name="E Minor" />
           <Chord beat={3} name="D Major" />
         </Measure>
-        <Measure bar={2}>
+        <Measure bar={2} currentBar={this.props.measure} currentBeat={this.props.beat} beatPercentage={this.props.beatPercentage}>
           <Chord beat={1} name="G Major" />
           <Lyric beat={4} words="Well I" />
         </Measure>
-        <Measure>
+        <Measure bar={3} currentBar={this.props.measure} currentBeat={this.props.beat} beatPercentage={this.props.beatPercentage}>
           <Chord beat={1} name="E Minor" />
           <Chord beat={3} name="D Major" />
           <Lyric beat={2} words="won't" />
@@ -39,40 +41,38 @@ class SongScroller extends Component {
 
 class Chord extends Component {
   render () {
-    return <span className="chord">{this.props.name}</span>
+    return <span style={{top: 5, left: (this.props.beat - 1) / 4.0 * measureWidth}} className="chord">{this.props.name}</span>
   }
 }
 
 class Lyric extends Component {
+  position () {
+    return {top: 80, left: (this.props.beat - 1) / 4.0 * measureWidth}
+  }
+
   render () {
-    return <span>{this.props.words}</span>
+    // let position = this.position()
+    return <span className="lyric" style={this.position()}>{this.props.words}</span>
   }
 }
 
 class Measure extends Component {
   render () {
-    console.log(this.props.children)
+    let marker = null
+    if (this.props.beatPercentage && this.props.bar === this.props.currentBar) {
+      const beatPercentage = this.props.beatPercentage > 1 ? 1 : this.props.beatPercentage
+      const markerPosition = (this.props.currentBeat - 1 + beatPercentage * 0.90) * 0.25 * measureWidth
+      marker = <div id="marker" style={{left: markerPosition}} />
+    }
     return (
-      <span className="measure">
-        <div>
-          {this.props.children.filter((child) => child.type === Chord)}
-        </div>
-        <div>
-          {this.props.children.filter((child) => child.type === Lyric)}
-        </div>
+      <span className="measure" style={{width: measureWidth}}>
+        {this.props.children}
+        {/*  beats 2, 3, 4 */}
+        <div className="beat" style={{left: 0.25 * measureWidth}}/>
+        <div className="beat" style={{left: 0.50 * measureWidth}}/>
+        <div className="beat" style={{left: 0.75 * measureWidth}}/>
+        {marker}
       </span>
-    )
-  }
-}
-
-class Metronome extends Component {
-  render () {
-    return (
-      <div>
-        <audio controls id='metronome'>
-          <source src="/metronome.wav" />
-        </audio>
-      </div>
     )
   }
 }
@@ -80,12 +80,11 @@ class Metronome extends Component {
 class Song extends Component {
   constructor (props) {
     super(props)
-    this.beatLength = 1 / (props.bpm / 60 / 1000)
-    console.log('beat length', this.beatLength)
-    this.onPlay = this.onPlay.bind(this)
+    this.onBeat = this.onBeat.bind(this)
     this.state = {
       measure: 1,
-      beat: 1
+      beat: 1,
+      preBeats: 0
     }
   }
 
@@ -93,23 +92,38 @@ class Song extends Component {
     clearInterval(this.beatUpdateInterval)
   }
 
-  onPlay () {
-    // TODO handle starts other than the start of song
-    const startTime = Date.now()
-    const playedBeats = {}
-    this.beatUpdateInterval = setInterval(() => {
-      const elapsedMS = Date.now() - startTime
-      const elapsedBeats = Math.floor(elapsedMS / this.beatLength)
-      // TODO account for non-standard time signatures
-      const loc = {'measure': Math.floor(elapsedBeats / 4) + 1, 'beat': elapsedBeats % 4 + 1}
-      if (!playedBeats[`${loc.measure}:${loc.beat}`]) {
-        this.setState(loc)
-        const audioElement = document.getElementById('metronome')
-        audioElement.currentTime = 0
-        audioElement.play()
-        playedBeats[`${loc.measure}:${loc.beat}`] = true
-      }
+  startInterval () {
+    setInterval(() => {
+      this.setState((prevState, props) => {
+        let beatPercentage = (Date.now() - prevState.lastBeat) / prevState.beatSize
+        if (beatPercentage > 1) {
+          console.log(prevState)
+        }
+        return {beatPercentage}
+      })
     }, 20)
+  }
+
+  onBeat () {
+    this.setState((prevState, props) => {
+      const newState = {}
+      if (prevState.lastBeat) {
+        newState.beatSize = Date.now() - prevState.lastBeat
+      }
+      newState.lastBeat = Date.now()
+      if (prevState.preBeats <= 4) {
+        newState.preBeats = prevState.preBeats + 1
+        if (prevState.preBeats === 4) {
+          newState.playing = true
+          this.startInterval()
+        }
+        return newState
+      }
+      newState.measure = prevState.measure + (prevState.beat === 4 ? 1 : 0)
+      newState.beat = prevState.beat % 4 + 1
+      newState.beatPercentage = 0
+      return newState
+    })
   }
 
   render () {
@@ -118,11 +132,10 @@ class Song extends Component {
         <TimeBar title={this.props.title}
                  artist={this.props.artist}
                  bars={this.props.bars}
-                 onPlay={this.onPlay}
+                 onBeat={this.onBeat}
                  measure={this.state.measure}
                  beat={this.state.beat} />
-        <Metronome />
-        <SongScroller />
+        <SongScroller measure={this.state.measure} beat={this.state.beat} beatPercentage={this.state.beatPercentage}/>
       </div>
     )
   }
