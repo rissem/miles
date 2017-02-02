@@ -1,8 +1,10 @@
 FROM node:6.9.5
 
+RUN npm install -g yarn
 ADD package.json /app/package.json
 WORKDIR /app
-RUN npm install
+RUN yarn
 ADD src /app/src
-
-CMD node src/index.js
+RUN npm install -g nodemon
+ADD public /app/public
+CMD nodemon /app/src/index.js
