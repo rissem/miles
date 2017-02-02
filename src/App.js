@@ -17,23 +17,48 @@ class TimeBar extends Component {
 }
 
 class SongScroller extends Component {
+  constructor (props) {
+    super()
+    this.state = {beats: []}
+  }
+
+  chords (start, end) {
+    return this.props.chords.filter((chord) =>
+      chord.time > start && chord.time < end
+    ).map((chord) => {
+      const beat = (chord.time - start) / (end - start) * 4 + 1
+      return <Chord key={beat} beat={beat} name={chord.chord} />
+    })
+  }
+
+  lyrics (start, end) {
+    return this.props.lyrics.filter((lyric) =>
+      lyric.time > start && lyric.time < end
+    ).map((lyric) => {
+      const beat = (lyric.time - start) / (end - start) * 4 + 1
+      return <Lyric key={beat} beat={beat} words={lyric.lyric} />
+    })
+  }
+
+  measures () {
+    const measures = []
+    for (let measure = 1; measure < Math.ceil(this.props.beats.length / 4); measure++) {
+      const measureStart = this.props.beats[(measure - 1) * 4].time
+      const measureEnd = this.props.beats[measure * 4].time
+      measures.push(
+        <Measure key={measure} bar={measure}>
+          {this.chords(measureStart, measureEnd)}
+          {this.lyrics(measureStart, measureEnd)}
+        </Measure>
+      )
+    }
+    return measures
+  }
+
   render () {
     return (
       <div id="songscroller">
-        <Measure bar={1} currentBar={this.props.measure} currentBeat={this.props.beat} beatPercentage={this.props.beatPercentage}>
-          <Chord beat={1} name="E Minor" />
-          <Chord beat={3} name="D Major" />
-        </Measure>
-        <Measure bar={2} currentBar={this.props.measure} currentBeat={this.props.beat} beatPercentage={this.props.beatPercentage}>
-          <Chord beat={1} name="G Major" />
-          <Lyric beat={4} words="Well I" />
-        </Measure>
-        <Measure bar={3} currentBar={this.props.measure} currentBeat={this.props.beat} beatPercentage={this.props.beatPercentage}>
-          <Chord beat={1} name="E Minor" />
-          <Chord beat={3} name="D Major" />
-          <Lyric beat={2} words="won't" />
-          <Lyric beat={4} words="back" />
-        </Measure>
+        {this.measures()}
         <div style={{clear: 'both'}} />
       </div>
 
@@ -114,7 +139,7 @@ class Song extends Component {
         }
         return {beatPercentage}
       })
-    }, 20)
+    }, 2000)
   }
 
   onBeat () {
@@ -183,6 +208,9 @@ class Song extends Component {
                  onBeat={this.onBeat}
                  measure={this.state.measure}
                  beat={this.state.beat} />
+        <BeatRecorder songStart={this.state.songStart} beatRecorder={this.beatRecorder}/>
+        <ChordRecorder songStart={this.state.songStart} chordRecorder={this.chordRecorder}/>
+        <LyricRecorder songStart={this.state.songStart} lyricRecorder={this.lyricRecorder}/>
         <SongScroller measure={this.state.measure}
           beat={this.state.beat}
           beatPercentage={this.state.beatPercentage}
@@ -190,9 +218,6 @@ class Song extends Component {
           lyrics={this.state.lyrics}
           beats={this.state.beats}
         />
-        <BeatRecorder songStart={this.state.songStart} beatRecorder={this.beatRecorder}/>
-        <ChordRecorder songStart={this.state.songStart} chordRecorder={this.chordRecorder}/>
-        <LyricRecorder songStart={this.state.songStart} lyricRecorder={this.lyricRecorder}/>
       </div>
     )
   }
@@ -245,7 +270,7 @@ class ChordRecorder extends Component {
       <div>
         <h1>Chord Recorder</h1>
         <input id="chord" type="text" />
-        <button onClick={this.addChord}>Add chord</button>
+        <button onMouseDown={this.addChord}>Add chord</button>
       </div>
     )
 
@@ -301,7 +326,7 @@ class LyricRecorder extends Component {
       let i = 0
       const buttons = this.state.lyrics.map((lyric) => {
         i += 1
-        return <button onClick={this.addLyric} key={lyric + i}>{lyric}</button>
+        return <button onMouseDown={this.addLyric} key={lyric + i}>{lyric}</button>
       })
       return (
         <div>
