@@ -86,7 +86,10 @@ class Song extends Component {
     this.state = {
       measure: 1,
       beat: 1,
-      preBeats: 0
+      preBeats: 0,
+      beats: [],
+      chords: [],
+      lyrics: []
     }
     this.startSong = this.startSong.bind(this)
     this.print = this.print.bind(this)
@@ -138,24 +141,34 @@ class Song extends Component {
   }
 
   startSong () {
-    document.getElementsByTagName('audio')[0].play()
-    this.setState({songStart: Date.now()})
+    setTimeout(() => {
+      const player = document.getElementsByTagName('audio')[0]
+      player.currentTime = 0
+      player.play()
+      this.setState({songStart: Date.now()})
+    }, 500)
   }
 
   beatRecorder () {
-    this.beats = this.beats.concat({time: Date.now() - this.state.songStart})
+    this.setState((prevState, props) => {
+      return {beats: prevState.beats.concat({time: Date.now() - this.state.songStart})}
+    })
   }
 
   chordRecorder (chord) {
-    this.chords = this.chords.concat({time: Date.now() - this.state.songStart, chord})
+    this.setState((prevState, props) => {
+      return {chords: prevState.chords.concat({time: Date.now() - this.state.songStart, chord})}
+    })
   }
 
   lyricRecorder (lyric) {
-    this.lyrics = this.lyrics.concat({time: Date.now() - this.state.songStart, lyric})
+    this.setState((prevState, props) => {
+      return {lyrics: prevState.lyrics.concat({time: Date.now() - this.state.songStart, lyric})}
+    })
   }
 
   print () {
-    console.log(JSON.stringify({beats: this.beats, chords: this.chords, lyrics: this.lyrics}))
+    console.log(JSON.stringify({beats: this.state.beats, chords: this.state.chords, lyrics: this.state.lyrics}))
   }
 
   render () {
@@ -170,7 +183,13 @@ class Song extends Component {
                  onBeat={this.onBeat}
                  measure={this.state.measure}
                  beat={this.state.beat} />
-        <SongScroller measure={this.state.measure} beat={this.state.beat} beatPercentage={this.state.beatPercentage}/>
+        <SongScroller measure={this.state.measure}
+          beat={this.state.beat}
+          beatPercentage={this.state.beatPercentage}
+          chords={this.state.chords}
+          lyrics={this.state.lyrics}
+          beats={this.state.beats}
+        />
         <BeatRecorder songStart={this.state.songStart} beatRecorder={this.beatRecorder}/>
         <ChordRecorder songStart={this.state.songStart} chordRecorder={this.chordRecorder}/>
         <LyricRecorder songStart={this.state.songStart} lyricRecorder={this.lyricRecorder}/>
