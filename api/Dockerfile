@@ -2,9 +2,7 @@ FROM node:6.9.5
 
 ADD package.json /app/package.json
 WORKDIR /app
-RUN npm install -g yarn
-RUN yarn
-ADD public /app/public
+RUN npm install
 ADD src /app/src
 
-CMD yarn start
+CMD node src/index.js
