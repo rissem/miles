@@ -168,27 +168,27 @@ class Song extends Component {
   startSong () {
     setTimeout(() => {
       const player = document.getElementsByTagName('audio')[0]
+      this.player = player
       player.currentTime = 0
       player.play()
-      this.setState({songStart: Date.now()})
     }, 500)
   }
 
   beatRecorder () {
     this.setState((prevState, props) => {
-      return {beats: prevState.beats.concat({time: Date.now() - this.state.songStart})}
+      return {beats: prevState.beats.concat({time: this.player.currentTime})}
     })
   }
 
   chordRecorder (chord) {
     this.setState((prevState, props) => {
-      return {chords: prevState.chords.concat({time: Date.now() - this.state.songStart, chord})}
+      return {chords: prevState.chords.concat({time: this.player.currentTime, chord})}
     })
   }
 
   lyricRecorder (lyric) {
     this.setState((prevState, props) => {
-      return {lyrics: prevState.lyrics.concat({time: Date.now() - this.state.songStart, lyric})}
+      return {lyrics: prevState.lyrics.concat({time: this.player.currentTime, lyric})}
     })
   }
 
@@ -208,9 +208,9 @@ class Song extends Component {
                  onBeat={this.onBeat}
                  measure={this.state.measure}
                  beat={this.state.beat} />
-        <BeatRecorder songStart={this.state.songStart} beatRecorder={this.beatRecorder}/>
-        <ChordRecorder songStart={this.state.songStart} chordRecorder={this.chordRecorder}/>
-        <LyricRecorder songStart={this.state.songStart} lyricRecorder={this.lyricRecorder}/>
+        <BeatRecorder beatRecorder={this.beatRecorder}/>
+        <ChordRecorder chordRecorder={this.chordRecorder}/>
+        <LyricRecorder lyricRecorder={this.lyricRecorder}/>
         <SongScroller measure={this.state.measure}
           beat={this.state.beat}
           beatPercentage={this.state.beatPercentage}
