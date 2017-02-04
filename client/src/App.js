@@ -46,7 +46,7 @@ class SongScroller extends Component {
       const measureStart = this.props.beats[(measure - 1) * 4].time
       const measureEnd = this.props.beats[measure * 4].time
       measures.push(
-        <Measure key={measure} bar={measure}>
+        <Measure key={measure} bar={measure} current={this.props.measure === measure} beat={this.props.beat}>
           {this.chords(measureStart, measureEnd)}
           {this.lyrics(measureStart, measureEnd)}
         </Measure>
@@ -86,11 +86,13 @@ class Lyric extends Component {
 class Measure extends Component {
   render () {
     let marker = null
-    if (this.props.beatPercentage && this.props.bar === this.props.currentBar) {
-      const beatPercentage = this.props.beatPercentage > 1 ? 1 : this.props.beatPercentage
-      const markerPosition = (this.props.currentBeat - 1 + beatPercentage * 0.90) * 0.25 * measureWidth
-      marker = <div id="marker" style={{left: markerPosition}} />
+    if (this.props.current) {
+      let className = `beat${this.props.beat} marker`
+      marker = (
+        <div className={className} style={{'animationDuration': '0.5s'}} />
+      )
     }
+
     return (
       <span className="measure" style={{width: measureWidth}}>
         {this.props.children}
@@ -126,22 +128,6 @@ class Song extends Component {
     this.lyrics = []
   }
 
-  componentWillUnmount () {
-    clearInterval(this.beatUpdateInterval)
-  }
-
-  startInterval () {
-    setInterval(() => {
-      this.setState((prevState, props) => {
-        let beatPercentage = (Date.now() - prevState.lastBeat) / prevState.beatSize
-        if (beatPercentage > 1) {
-          console.log(prevState)
-        }
-        return {beatPercentage}
-      })
-    }, 2000)
-  }
-
   onBeat () {
     this.setState((prevState, props) => {
       const newState = {}
@@ -153,14 +139,11 @@ class Song extends Component {
         newState.preBeats = prevState.preBeats + 1
         if (prevState.preBeats === 4) {
           newState.playing = true
-          clearInterval(this.interval)
-          this.interval = this.startInterval()
         }
         return newState
       }
       newState.measure = prevState.measure + (prevState.beat === 4 ? 1 : 0)
       newState.beat = prevState.beat % 4 + 1
-      newState.beatPercentage = 0
       return newState
     })
   }
@@ -213,7 +196,6 @@ class Song extends Component {
         <LyricRecorder lyricRecorder={this.lyricRecorder}/>
         <SongScroller measure={this.state.measure}
           beat={this.state.beat}
-          beatPercentage={this.state.beatPercentage}
           chords={this.state.chords}
           lyrics={this.state.lyrics}
           beats={this.state.beats}

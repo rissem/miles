@@ -1,9 +1,7 @@
 version: "3"
 services:
-  db:
+  postgres:
     image: postgres:9.6.1-alpine
-    ports:
-      - "127.0.0.1:5432:5432"
   front-end:
     build: ./client
     volumes:
@@ -14,3 +12,5 @@ services:
     build: ./api
     volumes:
       - "./api/src:/app/src"
+    environment:
+      PG_HOST: postgres

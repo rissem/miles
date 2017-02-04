@@ -41,10 +41,62 @@
   position: absolute
 }
 
-#marker {
+.marker {
   height:10px;
   width: 10px;
   top: 30px;
   background-color: red;
   position: absolute;
+}
+
+
+.beat1 {
+  animation-name: beat1;
+  left: 100px;
+}
+
+.beat2 {
+  animation-name: beat2;
+  left: 200px;
+}
+.beat3 {
+  animation-name: beat3;
+  left: 300px;
+}
+.beat4 {
+  animation-name: beat4;
+  left: 400px;
+}
+
+@keyframes beat1 {
+  from {
+    left: 0px;
+  }
+  to {
+    left:100px;
+  }
+}
+@keyframes beat2 {
+  from {
+    left: 100px;
+  }
+  to {
+    left: 200px;
+  }
+}
+@keyframes beat3 {
+  from {
+    left: 200px;
+  }
+  to {
+    left:300px;
+  }
+}
+@keyframes beat4 {
+  from {
+    left: 300px;
+  }
+  to {
+    left:400px;
+  }
 }
