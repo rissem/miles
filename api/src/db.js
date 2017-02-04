@@ -15,14 +15,16 @@ const pool = new pg.Pool(config)
 let connect = () => {
   return new Promise(function (resolve, reject) {
     pool.connect((err, client, done) => {
-      err ? reject(err) : resolve(client, done)
+      console.log('done?', done)
+      err ? reject(err) : resolve([client, done])
     })
   })
 }
 
-const query = (client, query, args) => {
+const query = (client, query, done, args) => {
   return new Promise(function (resolve, reject) {
     client.query(query, args, function (err, result) {
+      done()
       err ? reject(err) : resolve(result)
     })
   })
@@ -30,10 +32,14 @@ const query = (client, query, args) => {
 
 module.exports = {
   query: (q, args) => {
-    return connect().then((client, done) => {
-      return query(client, q, args)
+    return connect().then(([client, done]) => {
+      return query(client, q, done, args)
     }).then((result) => {
       return Promise.resolve(result.rows)
     })
   }
 }
+
+module.exports.query('SELECT $1::text as name', ['brianc']).then((result) => {
+  console.log(result)
+})
