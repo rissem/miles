@@ -17,7 +17,8 @@ pool.query(`CREATE TABLE IF NOT EXISTS songs (
     created timestamptz,
     original_artist varchar(200),
     title varchar(200),
-    file varchar(200)
+    file varchar(200),
+    data jsonb
   )`)
 
 module.exports = {

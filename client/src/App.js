@@ -120,7 +120,7 @@ class Song extends Component {
       lyrics: []
     }
     this.startSong = this.startSong.bind(this)
-    this.print = this.print.bind(this)
+    this.save = this.save.bind(this)
     this.chordRecorder = this.chordRecorder.bind(this)
     this.beatRecorder = this.beatRecorder.bind(this)
     this.lyricRecorder = this.lyricRecorder.bind(this)
@@ -176,8 +176,11 @@ class Song extends Component {
     })
   }
 
-  print () {
-    console.log(JSON.stringify({beats: this.state.beats, chords: this.state.chords, lyrics: this.state.lyrics}))
+  save () {
+    $.post(`/song/${this.props.songId}`, {data: JSON.stringify({
+      beats: this.state.beats,
+      chords: this.state.chords,
+      lyrics: this.state.lyrics})})
   }
 
   render () {
@@ -185,7 +188,7 @@ class Song extends Component {
       <div id="song">
         <audio src={this.props.songUrl} />
         <button onMouseDown={this.startSong} id="startSong">Start Song</button>
-        <button onClick={this.print}>Print</button>
+        <button onClick={this.save}>Save</button>
         <TimeBar title={this.props.title}
                  artist={this.props.artist}
                  bars={this.props.bars}
@@ -349,9 +352,12 @@ class SongChooser extends Component {
     options.unshift(<option key='pickasong' value={null}>Pick a song</option>)
     if (this.state.chosenSong) {
       const song = this.state.chosenSong
+      // maybe just pass song?
       return <Song title={song.title}
         artist={song.original_artist}
-        songUrl={song.file} />
+        songUrl={song.file}
+        songId={song.id}
+      />
     } else {
       return <select onSelect={this.onSelect} onChange={this.onSelect}>{options}</select>
     }
