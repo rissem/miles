@@ -12,34 +12,20 @@ const config = {
 
 const pool = new pg.Pool(config)
 
-let connect = () => {
-  return new Promise(function (resolve, reject) {
-    pool.connect((err, client, done) => {
-      console.log('done?', done)
-      err ? reject(err) : resolve([client, done])
-    })
-  })
-}
-
-const query = (client, query, done, args) => {
-  return new Promise(function (resolve, reject) {
-    client.query(query, args, function (err, result) {
-      done()
-      err ? reject(err) : resolve(result)
-    })
-  })
-}
+pool.query(`CREATE TABLE IF NOT EXISTS songs (
+    id serial,
+    created timestamptz,
+    original_artist varchar(200),
+    title varchar(200),
+    file varchar(200)
+  )`)
 
 module.exports = {
   query: (q, args) => {
-    return connect().then(([client, done]) => {
-      return query(client, q, done, args)
-    }).then((result) => {
-      return Promise.resolve(result.rows)
+    return new Promise((resolve, reject) => {
+      pool.query(q, args, (err, result) => {
+        err ? reject(err) : resolve(result)
+      })
     })
   }
 }
-
-module.exports.query('SELECT $1::text as name', ['brianc']).then((result) => {
-  console.log(result)
-})

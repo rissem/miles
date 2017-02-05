@@ -12,6 +12,15 @@ app.get('/hello', function (req, res) {
   })
 })
 
+app.get('/songs', function (req, res) {
+  db.query('SELECT * from songs ORDER BY title', []).then((result) => {
+    res.send(JSON.stringify(result.rows))
+  }).catch((e) => {
+    console.error('ERROR', e)
+    res.send('Error!', e)
+  })
+})
+
 app.listen(3000, function () {
   console.log('Example app listening on port 3000!')
 })

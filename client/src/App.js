@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import './App.css'
+import $ from 'jquery'
 
 const measureWidth = 400
 
@@ -320,15 +321,48 @@ class LyricRecorder extends Component {
   }
 }
 
+class SongChooser extends Component {
+  constructor () {
+    super()
+    this.state = {songs: []}
+    this.onSelect = this.onSelect.bind(this)
+    this.fetchSongs()
+  }
+
+  fetchSongs () {
+    $.getJSON('/songs').done((result) => {
+      this.setState({songs: result})
+    })
+  }
+
+  onSelect (e) {
+    if (e.target.value) {
+      const id = parseInt(e.target.value, 10)
+      this.setState({chosenSong: this.state.songs.find((s) => s.id === id)})
+    }
+  }
+
+  render () {
+    const options = this.state.songs.map((song) => {
+      return <option key={song.id} value={song.id}>{song.title} - {song.original_artist}</option>
+    })
+    options.unshift(<option key='pickasong' value={null}>Pick a song</option>)
+    if (this.state.chosenSong) {
+      const song = this.state.chosenSong
+      return <Song title={song.title}
+        artist={song.original_artist}
+        songUrl={song.file} />
+    } else {
+      return <select onSelect={this.onSelect} onChange={this.onSelect}>{options}</select>
+    }
+  }
+}
+
 class App extends Component {
   render () {
     return (
       <div>
-        <Song title="I won't back down"
-          artist="Tom Petty & the Heartbreakers"
-          bars="140"
-          songUrl="/tomPettywillnotbackdown.m4a"
-        />
+        <SongChooser />
       </div>
     )
   }
