@@ -4,19 +4,6 @@ import $ from 'jquery'
 
 const measureWidth = 400
 
-class TimeBar extends Component {
-  render () {
-    return (
-      <div id="timeBar">
-        <h3>{this.props.title} - {this.props.artist}</h3>
-        <button onMouseDown={this.props.onBeat}>Triangle</button>
-        <div>{this.props.measure}</div>
-        <div>{this.props.beat}</div>
-      </div>
-    )
-  }
-}
-
 class SongScroller extends Component {
   chords (start, end) {
     return this.props.song.data.chords.filter((chord) =>
@@ -194,17 +181,15 @@ class Song extends Component {
     }
     return (
       <div id="song">
-        <audio src={this.props.song.file} />
+        <h2>{this.props.song.title} - {this.props.song.original_artist}</h2>
+        <audio controls src={this.props.song.file} />
         <button onMouseDown={this.startSong} id="startSong">Start Song</button>
         <button onClick={this.save}>Save</button>
-        <TimeBar title={this.props.song.title}
-                 artist={this.props.song.original_artist}
-                 onBeat={this.onBeat}
-                 measure={this.state.measure}
-                 beat={this.state.beat} />
+        <button onMouseDown={this.onBeat}>Triangle</button>
         <BeatRecorder beatRecorder={this.beatRecorder}/>
         <ChordRecorder chordRecorder={this.chordRecorder}/>
         <LyricRecorder lyricRecorder={this.lyricRecorder}/>
+        <div style={{clear: 'both'}} />
         <SongScroller measure={this.state.measure}
           beat={this.state.beat}
           song={song}
@@ -227,14 +212,15 @@ class BeatRecorder extends Component {
 
   render () {
     return (
-      <div>
-        <h1>Beat Recorder</h1>
+      <div style={{float: 'left', width: 100}}>
+        <h3>Beats</h3>
         <input type="button" value="beat" onMouseDown={this.props.beatRecorder}/>
       </div>
     )
   }
 
   onBeat () {
+    console.log('does this happen?')
     this.setState((prevState, props) => {
       return {beats: prevState.beats.concat(Date.now())}
     })
@@ -259,7 +245,7 @@ class ChordRecorder extends Component {
   render () {
     let chordAdder = (
       <div>
-        <h1>Chord Recorder</h1>
+        <h3>Chords</h3>
         <input id="chord" type="text" />
         <button onMouseDown={this.addChord}>Add chord</button>
       </div>
@@ -275,7 +261,7 @@ class ChordRecorder extends Component {
       </div>
     )
     return (
-      <div>
+      <div style={{float: 'left', width: 300}}>
         {chordAdder}
         {chordSetter}
       </div>
@@ -307,8 +293,8 @@ class LyricRecorder extends Component {
   render () {
     if (!this.state.lyrics) {
       return (
-      <div>
-        <h1>Lyric Recorder</h1>
+      <div style={{float: 'left', width: 400}}>
+        <h3>Lyrics</h3>
         <textarea id="pastedLyrics"></textarea>
         <button onClick={this.convertLyrics}>Submit Lyrics</button>
       </div>
@@ -321,7 +307,7 @@ class LyricRecorder extends Component {
       })
       return (
         <div>
-          <h1>Lyric Recorder</h1>
+          <h3>Lyrics</h3>
           {buttons}
         </div>
       )
