@@ -95,7 +95,7 @@ class Song extends Component {
     super(props)
     this.onBeat = this.onBeat.bind(this)
     this.state = {
-      measure: 1,
+      measure: 0,
       beat: 1,
       preBeats: 0,
       beats: [],
@@ -107,6 +107,7 @@ class Song extends Component {
     this.chordRecorder = this.chordRecorder.bind(this)
     this.beatRecorder = this.beatRecorder.bind(this)
     this.lyricRecorder = this.lyricRecorder.bind(this)
+    this.selectMode = this.selectMode.bind(this)
     this.beats = []
     this.chords = []
     this.lyrics = []
@@ -166,6 +167,10 @@ class Song extends Component {
       lyrics: this.state.lyrics})})
   }
 
+  selectMode (e) {
+    this.setState({mode: e.target.value})
+  }
+
   render () {
     let song = null
     if (this.state.beats.length > 0) {
@@ -179,23 +184,50 @@ class Song extends Component {
     } else {
       song = this.props.song
     }
-    return (
-      <div id="song">
-        <h2>{this.props.song.title} - {this.props.song.original_artist}</h2>
-        <audio controls src={this.props.song.file} />
-        <button onMouseDown={this.startSong} id="startSong">Start Song</button>
-        <button onClick={this.save}>Save</button>
+
+    const songControls = <div id="song">
+          <h2>{this.props.song.title} - {this.props.song.original_artist}</h2>
+          <input onChange={this.selectMode} type='radio' name='mode' value='record' />
+          <label htmlFor="record">Record</label>
+          <input type='radio' name='mode' value='play' onChange={this.selectMode}/>
+          <label htmlFor="play">Play</label>
+          <div style={{clear: 'both'}}></div>
+          <audio style={{float: 'left'}} controls src={this.props.song.file} />
+          <div style={{clear: 'both'}}></div>
+        </div>
+
+    if (this.state.mode === 'record') {
+      return (
+        <div>
+          {songControls}
+          <div className='recorderControls'>
+            <button style={{float: 'left'}} onMouseDown={this.startSong} id="startSong">Record Song</button>
+            <button style={{float: 'left'}} onClick={this.save}>Save</button>
+            <div style={{clear: 'both'}}></div>
+            <BeatRecorder beatRecorder={this.beatRecorder}/>
+            <ChordRecorder chordRecorder={this.chordRecorder}/>
+            <LyricRecorder lyricRecorder={this.lyricRecorder}/>
+          </div>
+          <div style={{clear: 'both'}} />
+          <SongScroller measure={this.state.measure}
+            beat={this.state.beat}
+            song={song}
+          />
+        </div>
+      )
+    } else if (this.state.mode === 'play' || !this.state.mode) {
+      return <div>
+        {songControls}
         <button onMouseDown={this.onBeat}>Triangle</button>
-        <BeatRecorder beatRecorder={this.beatRecorder}/>
-        <ChordRecorder chordRecorder={this.chordRecorder}/>
-        <LyricRecorder lyricRecorder={this.lyricRecorder}/>
         <div style={{clear: 'both'}} />
         <SongScroller measure={this.state.measure}
           beat={this.state.beat}
           song={song}
         />
       </div>
-    )
+    } else {
+      return <h3>Select mode</h3>
+    }
   }
 }
 
@@ -306,7 +338,7 @@ class LyricRecorder extends Component {
         return <button onMouseDown={this.addLyric} key={lyric + i}>{lyric}</button>
       })
       return (
-        <div>
+        <div style={{float: 'left', width: 400}}>
           <h3>Lyrics</h3>
           {buttons}
         </div>

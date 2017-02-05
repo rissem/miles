@@ -12,5 +12,6 @@ services:
     build: ./api
     volumes:
       - "./api/src:/app/src"
+      - './api/public:/app/public'
     environment:
       PG_HOST: postgres
