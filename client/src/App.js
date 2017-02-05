@@ -18,13 +18,8 @@ class TimeBar extends Component {
 }
 
 class SongScroller extends Component {
-  constructor (props) {
-    super()
-    this.state = {beats: []}
-  }
-
   chords (start, end) {
-    return this.props.chords.filter((chord) =>
+    return this.props.song.data.chords.filter((chord) =>
       chord.time > start && chord.time < end
     ).map((chord) => {
       const beat = (chord.time - start) / (end - start) * 4 + 1
@@ -33,7 +28,7 @@ class SongScroller extends Component {
   }
 
   lyrics (start, end) {
-    return this.props.lyrics.filter((lyric) =>
+    return this.props.song.data.lyrics.filter((lyric) =>
       lyric.time > start && lyric.time < end
     ).map((lyric) => {
       const beat = (lyric.time - start) / (end - start) * 4 + 1
@@ -43,9 +38,10 @@ class SongScroller extends Component {
 
   measures () {
     const measures = []
-    for (let measure = 1; measure < Math.ceil(this.props.beats.length / 4); measure++) {
-      const measureStart = this.props.beats[(measure - 1) * 4].time
-      const measureEnd = this.props.beats[measure * 4].time
+    const beats = this.props.song.data ? this.props.song.data.beats : []
+    for (let measure = 1; measure < Math.ceil(beats.length / 4); measure++) {
+      const measureStart = beats[(measure - 1) * 4].time
+      const measureEnd = beats[measure * 4].time
       measures.push(
         <Measure key={measure} bar={measure} current={this.props.measure === measure} beat={this.props.beat}>
           {this.chords(measureStart, measureEnd)}
@@ -177,21 +173,32 @@ class Song extends Component {
   }
 
   save () {
-    $.post(`/song/${this.props.songId}`, {data: JSON.stringify({
+    $.post(`/song/${this.props.song.id}`, {data: JSON.stringify({
       beats: this.state.beats,
       chords: this.state.chords,
       lyrics: this.state.lyrics})})
   }
 
   render () {
+    let song = null
+    if (this.state.beats.length > 0) {
+      song = {
+        data: {
+          beats: this.state.beats,
+          chords: this.state.chords,
+          lyrics: this.state.lyrics
+        }
+      }
+    } else {
+      song = this.props.song
+    }
     return (
       <div id="song">
-        <audio src={this.props.songUrl} />
+        <audio src={this.props.song.file} />
         <button onMouseDown={this.startSong} id="startSong">Start Song</button>
         <button onClick={this.save}>Save</button>
-        <TimeBar title={this.props.title}
-                 artist={this.props.artist}
-                 bars={this.props.bars}
+        <TimeBar title={this.props.song.title}
+                 artist={this.props.song.original_artist}
                  onBeat={this.onBeat}
                  measure={this.state.measure}
                  beat={this.state.beat} />
@@ -200,9 +207,7 @@ class Song extends Component {
         <LyricRecorder lyricRecorder={this.lyricRecorder}/>
         <SongScroller measure={this.state.measure}
           beat={this.state.beat}
-          chords={this.state.chords}
-          lyrics={this.state.lyrics}
-          beats={this.state.beats}
+          song={song}
         />
       </div>
     )
@@ -352,12 +357,7 @@ class SongChooser extends Component {
     options.unshift(<option key='pickasong' value={null}>Pick a song</option>)
     if (this.state.chosenSong) {
       const song = this.state.chosenSong
-      // maybe just pass song?
-      return <Song title={song.title}
-        artist={song.original_artist}
-        songUrl={song.file}
-        songId={song.id}
-      />
+      return <Song song={song} />
     } else {
       return <select onSelect={this.onSelect} onChange={this.onSelect}>{options}</select>
     }
