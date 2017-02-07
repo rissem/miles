@@ -289,9 +289,9 @@ class ChordRecorder extends Component {
 
   addChord () {
     this.setState((prevState, props) => {
-      let chord = document.getElementById('chord').value
+      let chords = document.getElementById('chord').value.split(' ')
       document.getElementById('chord').value = ''
-      return {chords: (prevState.chords || []).concat(chord)}
+      return {chords: (prevState.chords || []).concat(chords)}
     })
   }
 
@@ -300,13 +300,13 @@ class ChordRecorder extends Component {
       <div>
         <h3>Chords</h3>
         <input id="chord" type="text" />
-        <button onMouseDown={this.addChord}>Add chord</button>
+        <button onMouseDown={this.addChord}>Add chord(s)</button>
       </div>
     )
 
     let chordButtons = this.state.chords.map((chord) => {
       return <button onMouseDown={() => { this.props.chordRecorder(chord) }}
-        style={{margin: 20}} key={chord}>{chord}</button>
+        style={{margin: 20}} key={Math.random()}>{chord}</button>
     })
     let chordSetter = (
       <div>
@@ -314,7 +314,7 @@ class ChordRecorder extends Component {
       </div>
     )
     return (
-      <div style={{float: 'left', width: 300}}>
+      <div style={{float: 'left', width: 800}}>
         {chordAdder}
         {chordSetter}
       </div>
