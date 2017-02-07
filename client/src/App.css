@@ -100,3 +100,13 @@
     left:400px;
   }
 }
+
+#header {
+  height: 150px;
+}
+
+#songscroller {
+  position: relative;
+  overflow: auto;
+  height: 700px
+}

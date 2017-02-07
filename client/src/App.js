@@ -2,6 +2,8 @@ import React, { Component } from 'react'
 import './App.css'
 import $ from 'jquery'
 
+window.jquery = $
+
 const measureWidth = 400
 
 class SongScroller extends Component {
@@ -37,6 +39,19 @@ class SongScroller extends Component {
       )
     }
     return measures
+  }
+
+  scrollToCurrent () {
+    if ($('.measure.current').length === 0) {
+      return
+    }
+    let position = $('.measure.current').position()
+    let movement = position.top <= 160 ? 0 : position.top - 160
+    $('#songscroller').scrollTop($('#songscroller').scrollTop() + movement)
+  }
+
+  componentDidMount () {
+    setInterval(this.scrollToCurrent, 200)
   }
 
   render () {
@@ -77,8 +92,9 @@ class Measure extends Component {
       )
     }
 
+    const className = this.props.current ? 'measure current' : 'measure'
     return (
-      <span className="measure" style={{width: measureWidth}}>
+      <span className={className} style={{width: measureWidth}}>
         {this.props.children}
         {/*  beats 2, 3, 4 */}
         <div className="beat" style={{left: 0.25 * measureWidth}}/>
@@ -199,14 +215,16 @@ class Song extends Component {
     if (this.state.mode === 'record') {
       return (
         <div>
-          {songControls}
-          <div className='recorderControls'>
-            <button style={{float: 'left'}} onMouseDown={this.startSong} id="startSong">Record Song</button>
-            <button style={{float: 'left'}} onClick={this.save}>Save</button>
-            <div style={{clear: 'both'}}></div>
-            <BeatRecorder beatRecorder={this.beatRecorder}/>
-            <ChordRecorder chordRecorder={this.chordRecorder}/>
-            <LyricRecorder lyricRecorder={this.lyricRecorder}/>
+          <div id="header">
+            {songControls}
+            <div className='recorderControls'>
+              <button style={{float: 'left'}} onMouseDown={this.startSong} id="startSong">Record Song</button>
+              <button style={{float: 'left'}} onClick={this.save}>Save</button>
+              <div style={{clear: 'both'}}></div>
+              <BeatRecorder beatRecorder={this.beatRecorder}/>
+              <ChordRecorder chordRecorder={this.chordRecorder}/>
+              <LyricRecorder lyricRecorder={this.lyricRecorder}/>
+            </div>
           </div>
           <div style={{clear: 'both'}} />
           <SongScroller measure={this.state.measure}
@@ -217,9 +235,11 @@ class Song extends Component {
       )
     } else if (this.state.mode === 'play' || !this.state.mode) {
       return <div>
-        {songControls}
-        <button onMouseDown={this.onBeat}>Triangle</button>
-        <div style={{clear: 'both'}} />
+        <div id="header">
+          {songControls}
+          <button onMouseDown={this.onBeat}>Triangle</button>
+          <div style={{clear: 'both'}} />
+        </div>
         <SongScroller measure={this.state.measure}
           beat={this.state.beat}
           song={song}
