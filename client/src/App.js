@@ -185,20 +185,21 @@ class Song extends Component {
 
   selectMode (e) {
     this.setState({mode: e.target.value})
+    const song = this.props.song.data
+    if (e.target.value === 'record') {
+      this.setState({beats: [], chords: [], lyrics: []})
+    } else if (e.target.value === 'play') {
+      this.setState({beats: song.beats, chords: song.chords, lyrics: song.lyrics})
+    }
   }
 
   render () {
-    let song = null
-    if (this.state.beats.length > 0) {
-      song = {
-        data: {
-          beats: this.state.beats,
-          chords: this.state.chords,
-          lyrics: this.state.lyrics
-        }
+    const song = {
+      data: {
+        beats: this.state.beats,
+        chords: this.state.chords,
+        lyrics: this.state.lyrics
       }
-    } else {
-      song = this.props.song
     }
 
     const songControls = <div id="song">
