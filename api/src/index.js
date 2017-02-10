@@ -8,7 +8,7 @@ app.use(bodyParser.json())
 app.use(express.static('public'))
 
 app.get('/songs', function (req, res) {
-  db.query('SELECT * from songs ORDER BY title', []).then((result) => {
+  db.query('SELECT id, original_artist, title from songs ORDER BY title', []).then((result) => {
     res.send(JSON.stringify(result.rows))
   }).catch((e) => {
     console.error('ERROR', e)

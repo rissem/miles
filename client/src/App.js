@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import './App.css'
 import $ from 'jquery'
+import Chooser from './Chooser'
 
 window.jquery = $
 
@@ -11,7 +12,7 @@ class SongScroller extends Component {
     return this.props.song.data.chords.filter((chord) =>
       chord.time > start && chord.time < end
     ).map((chord) => {
-      const beat = (chord.time - start) / (end - start) * 4 + 1
+      const beat = Math.round((chord.time - start) / (end - start) * 4 + 1)
       return <Chord key={beat} beat={beat} name={chord.chord} />
     })
   }
@@ -123,7 +124,6 @@ class Song extends Component {
     this.chordRecorder = this.chordRecorder.bind(this)
     this.beatRecorder = this.beatRecorder.bind(this)
     this.lyricRecorder = this.lyricRecorder.bind(this)
-    this.selectMode = this.selectMode.bind(this)
     this.beats = []
     this.chords = []
     this.lyrics = []
@@ -181,16 +181,6 @@ class Song extends Component {
       beats: this.state.beats,
       chords: this.state.chords,
       lyrics: this.state.lyrics})})
-  }
-
-  selectMode (e) {
-    this.setState({mode: e.target.value})
-    const song = this.props.song.data
-    if (e.target.value === 'record') {
-      this.setState({beats: [], chords: [], lyrics: []})
-    } else if (e.target.value === 'play') {
-      this.setState({beats: song.beats, chords: song.chords, lyrics: song.lyrics})
-    }
   }
 
   render () {
@@ -368,46 +358,11 @@ class LyricRecorder extends Component {
   }
 }
 
-class SongChooser extends Component {
-  constructor () {
-    super()
-    this.state = {songs: []}
-    this.onSelect = this.onSelect.bind(this)
-    this.fetchSongs()
-  }
-
-  fetchSongs () {
-    $.getJSON('/songs').done((result) => {
-      this.setState({songs: result})
-    })
-  }
-
-  onSelect (e) {
-    if (e.target.value) {
-      const id = parseInt(e.target.value, 10)
-      this.setState({chosenSong: this.state.songs.find((s) => s.id === id)})
-    }
-  }
-
-  render () {
-    const options = this.state.songs.map((song) => {
-      return <option key={song.id} value={song.id}>{song.title} - {song.original_artist}</option>
-    })
-    options.unshift(<option key='pickasong' value={null}>Pick a song</option>)
-    if (this.state.chosenSong) {
-      const song = this.state.chosenSong
-      return <Song song={song} />
-    } else {
-      return <select onSelect={this.onSelect} onChange={this.onSelect}>{options}</select>
-    }
-  }
-}
-
 class App extends Component {
   render () {
     return (
       <div>
-        <SongChooser />
+        <Chooser />
       </div>
     )
   }
