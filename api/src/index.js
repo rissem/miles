@@ -16,6 +16,15 @@ app.get('/songs', function (req, res) {
   })
 })
 
+app.get('/song/:id', function (req, res) {
+  db.query('SELECT * FROM songs where id=$1::int', [req.params.id]).then((result) => {
+    res.send(JSON.stringify(result.rows[0]))
+  }).catch((e) => {
+    console.error('ERROR GETTING SONG', e)
+    res.send('Errr', e)
+  })
+})
+
 app.post('/song/:id', function (req, res) {
   db.query('UPDATE songs set data=$1::json where id=$2::int', [req.body.data, req.params.id]).then((result) => {
     res.send('we did it')
