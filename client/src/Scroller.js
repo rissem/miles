@@ -12,11 +12,6 @@ class Scroller extends Component {
   constructor (props) {
     super(props)
     this.state = {}
-    if (!props.song) return
-    console.log('eh?')
-    this.setState({chords: props.song.chords.reduce((map, chord) =>
-      map.set(chord.beat, chord.chord)
-    , new Map())})
   }
 
   beatToCoordinate (beat) {
@@ -35,10 +30,10 @@ class Scroller extends Component {
     console.log('draw lyric', lyric)
   }
 
-  drawBeat (beat, current) {
-    this.ctx.fillStyle = current ? 'green' : 'red'
+  drawBeat (beat, current, fillStyle) {
+    this.ctx.fillStyle = fillStyle || current ? 'green' : 'red'
     const {x, y} = this.beatToCoordinate(beat)
-    this.ctx.fillRect(x, y + 50, 20, 20)
+    this.ctx.fillRect(x, y + 30, 20, 20)
   }
 
   visibleBeats () {
@@ -65,12 +60,15 @@ class Scroller extends Component {
     this.props.song.chords.forEach((chord) => {
       if (chord.beat > firstBeat && chord.beat < lastBeat) {
         const {x, y} = this.beatToCoordinate(chord.beat)
-        this.ctx.font = '20px Helvetica'
-        this.ctx.fillText = 'black'
-        this.ctx.strokeText(chord.chord, x, y)
+        this.ctx.fillStyle = 'black'
+        this.ctx.fontStyle = 'extra-strong'
+        this.ctx.font = '40px Helvetica'
+        this.ctx.fillText(chord.chord, x, y)
       }
     })
   }
+
+
 
   drawGuides () {}
 
@@ -79,18 +77,17 @@ class Scroller extends Component {
     const [firstBeat, lastBeat] = this.visibleBeats()
     this.props.song.lyrics.forEach((lyric) => {
       if (lyric.beat > firstBeat && lyric.beat < lastBeat) {
+        const passed = lyric.beat < this.state.displayBeat
         const {x, y} = this.beatToCoordinate(lyric.beat)
-        this.ctx.font = '20px Helvetica'
-        this.ctx.fillText = 'black'
-        this.ctx.strokeText(lyric.lyric, x, y + 140)
+        this.ctx.fillStyle = passed ? 'red' : 'black'
+        this.ctx.font = '30px Times New Roman'
+        this.ctx.fillText(lyric.lyric, x, y + 100)
       }
     })
   }
 
   drawCursor () {
-    const {x, y} = this.beatToCoordinate(this.state.displayBeat)
-    this.ctx.fillStyle = 'rgba(0, 100, 100, 0.4)'
-    this.ctx.fillRect(x, y + 50, 20, 20)
+    this.drawBeat(this.state.displayBeat, null, 'rgba(0, 100, 100, 0.4)')
   }
 
   updateBeats (lastDraw) {

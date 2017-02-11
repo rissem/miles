@@ -7,7 +7,7 @@ const quantizeSong = function ({beats, chords, lyrics}) {
       qChords.push({beat: i, chord: chords.shift().chord})
     }
     while (lyrics.length > 0 && lyrics[0].time > beats[i - 1].time &&
-        lyrics[0].time > beats[i].time) {
+        lyrics[0].time < beats[i].time) {
       let lyric = lyrics.shift()
       let position = (lyric.time - beats[i - 1].time) / (beats[i].time - beats[i - 1].time)
       qLyrics.push(({beat: i + position, lyric: lyric.lyric}))
