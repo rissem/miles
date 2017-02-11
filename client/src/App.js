@@ -3,7 +3,8 @@ import './App.css'
 import $ from 'jquery'
 import Chooser from './Chooser'
 
-window.jquery = $
+// for developer convenience
+window.$ = $
 
 const measureWidth = 400
 
