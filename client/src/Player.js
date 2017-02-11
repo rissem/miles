@@ -12,6 +12,14 @@ class Player extends Component {
 
   componentDidMount () {
     this.fetchSong()
+    this.onKeyDown = (e) => {
+      if (e.keyCode === 32) this.triangle()
+    }
+    $(document.body).keydown(this.onKeyDown)
+  }
+
+  componentWillUnmount () {
+    $('body').unbind('keydown')
   }
 
   triangle () {

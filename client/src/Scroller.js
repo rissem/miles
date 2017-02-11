@@ -68,8 +68,6 @@ class Scroller extends Component {
     })
   }
 
-
-
   drawGuides () {}
 
   drawLyrics () {
