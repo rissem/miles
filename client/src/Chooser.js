@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import Player from './Player'
+import Recorder from './Recorder'
 import $ from 'jquery'
 
 class Chooser extends Component {
@@ -55,7 +56,7 @@ class Chooser extends Component {
       {this.songSelector()}
       {(this.state.chosenSong) ? this.recordPlayToggle() : null }
       {this.state.mode === 'play' ? <Player songId={this.state.chosenSong.id} /> : null}
-      {this.state.mode === 'record' ? <div>Record Button</div> : null}
+      {this.state.mode === 'record' ? <Recorder songId={this.state.chosenSong.id} /> : null}
     </div>)
   }
 }

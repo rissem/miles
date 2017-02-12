@@ -55,7 +55,7 @@ class Scroller extends Component {
   }
 
   drawChords () {
-    if (!this.props.song) return
+    if (!this.props.song || !this.props.song.chords) return
     const [firstBeat, lastBeat] = this.visibleBeats()
     this.props.song.chords.forEach((chord) => {
       if (chord.beat > firstBeat && chord.beat < lastBeat) {
@@ -67,11 +67,10 @@ class Scroller extends Component {
       }
     })
   }
-
   drawGuides () {}
 
   drawLyrics () {
-    if (!this.props.song) return
+    if (!this.props.song || !this.props.song.lyrics) return
     const [firstBeat, lastBeat] = this.visibleBeats()
     this.props.song.lyrics.forEach((lyric) => {
       if (lyric.beat > firstBeat && lyric.beat < lastBeat) {
