@@ -1,6 +1,6 @@
 
 import React, { Component } from 'react'
-import Scroller from './Scroller'
+//import Scroller from './Scroller'
 import $ from 'jquery'
 // import utils from './utils'
 

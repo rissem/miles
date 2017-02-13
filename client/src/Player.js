@@ -30,11 +30,13 @@ class Player extends Component {
 
   fetchSong () {
     $.getJSON(`/song/${this.props.songId}`).done((result) => {
+      console.log(result)
+      let lastBeat = result.data.beats.length > 10 ? 10 : result.data.beats.length - 1
       this.setState({
         'rawSong': result,
         'beat': 0,
         // average time between first and tenth beats then convert from ms between beats to bpm
-        'beatLength': (result.data.beats[10].time - result.data.beats[0].time) / 10 * 1000,
+        'beatLength': (result.data.beats[lastBeat].time - result.data.beats[0].time) / 10 * 1000,
         'quantizedSong': utils.quantizeSong(result.data)
       })
     })
