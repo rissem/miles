@@ -17,7 +17,7 @@ class Scroller extends Component {
   beatToCoordinate (beat) {
     const beatsPerLine = Math.floor(Math.floor(this.state.width / beatWidth) / 4) * 4
     const activeRow = Math.floor((this.state.displayBeat - 1) / beatsPerLine) + 1
-    const beatRow = Math.floor((beat - 1) / beatsPerLine) + 1
+    const beatRow = Math.floor((beat - 1) / beatsPerLine) + 2
     // beat row is the second row
 
     const x = ((beat - 1) % beatsPerLine) * beatWidth
