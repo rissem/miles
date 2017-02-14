@@ -4,8 +4,8 @@ import $ from 'jquery'
 // section of code up here that knows nothing about music
 // something like draw(shape, text, color, border, shape, position)
 
-const beatContainerWidth = 150
-const rowHeight = 150
+const minimumBeatContainerWidth = 150
+const rowHeight = 200
 const beatContainerHeight = rowHeight
 
 const beatHeight = 35
@@ -32,37 +32,58 @@ class Scroller extends Component {
     }
   }
 
-  beatContainerToCoordinate (beat) {
-    const beatsPerLine = Math.floor(Math.floor(this.state.width / beatContainerWidth) / 4) * 4
+  beatsPerLine () {
+    return Math.floor(Math.floor(this.state.width / minimumBeatContainerWidth) / 4) * 4
+  }
+
+  beatMeta (beat) {
+    const beatsPerLine = this.beatsPerLine()
     const activeRow = Math.floor((this.state.displayBeat - 1) / beatsPerLine) + 1
     const beatRow = Math.floor((beat - 1) / beatsPerLine) + 1
+
+    return {
+      'beatsPerLine': beatsPerLine, 
+      'activeRow': activeRow, 
+      'beatRow': beatRow
+    }
+  }
+
+  beatContainerWidth () {
+    return Math.floor(this.state.width / this.beatsPerLine())
+  }
+
+  beatContainerToCoordinate (beat) {
+    const beatMeta = this.beatMeta()
+    const beatsPerLine = beatMeta['beatsPerLine'] 
+    const activeRow = beatMeta['activeRow'] 
+    const beatRow = beatMeta['beatRow'] 
     // beat row is the second row
 
-    const x = ((beat - 1) % beatsPerLine) * beatContainerWidth 
+    const x = ((beat - 1) % beatsPerLine) * this.beatContainerWidth()
     const lineComplete = ((this.state.displayBeat - 1) % beatsPerLine) / beatsPerLine
     const y = (beatRow + 1 - activeRow) * rowHeight - rowHeight * lineComplete 
     return {x, y}
   }
 
   beatToCoordinate (beat) {
-    const beatsPerLine = Math.floor(Math.floor(this.state.width / beatContainerWidth) / 4) * 4
-    const activeRow = Math.floor((this.state.displayBeat - 1) / beatsPerLine) + 1
-    const beatRow = Math.floor((beat - 1) / beatsPerLine) + 1
-    // beat row is the second row
+    const beatMeta = this.beatMeta()
+    const beatsPerLine = beatMeta['beatsPerLine'] 
+    const activeRow = beatMeta['activeRow'] 
+    const beatRow = beatMeta['beatRow'] 
 
-    const x = ((beat - 1) % beatsPerLine) * beatContainerWidth + (beatContainerWidth / 2) // - (beatWidth / 2))
+    const x = ((beat - 1) % beatsPerLine) * this.beatContainerWidth() + (this.beatContainerWidth() / 2)
     const lineComplete = ((this.state.displayBeat - 1) % beatsPerLine) / beatsPerLine
     const y = (beatRow + 1 - activeRow) * rowHeight - rowHeight * lineComplete + (rowHeight / 2) // - (beatHeight / 2))
     return {x, y}
   }
 
   beatToChordCoordinate (beat) {
-    const beatsPerLine = Math.floor(Math.floor(this.state.width / beatContainerWidth) / 4) * 4
-    const activeRow = Math.floor((this.state.displayBeat - 1) / beatsPerLine) + 1
-    const beatRow = Math.floor((beat - 1) / beatsPerLine) + 2
-    // beat row is the second row
+    const beatMeta = this.beatMeta()
+    const beatsPerLine = beatMeta['beatsPerLine'] 
+    const activeRow = beatMeta['activeRow'] 
+    const beatRow = beatMeta['beatRow'] 
 
-    const x = ((beat - 1) % beatsPerLine) * beatContainerWidth + ((beatContainerWidth / 2) - chordWidthCorrection )
+    const x = ((beat - 1) % beatsPerLine) * this.beatContainerWidth() + ((this.beatContainerWidth() / 2) - chordWidthCorrection )
     const lineComplete = ((this.state.displayBeat - 1) % beatsPerLine) / beatsPerLine
     const y = (beatRow + 1 - activeRow) * rowHeight - rowHeight * lineComplete + ((rowHeight / 2)  + chordHeightCorrection)
     return {x, y}
@@ -75,7 +96,7 @@ class Scroller extends Component {
   drawBeatContainer (beat) {
     this.ctx.strokeStyle = debugBeatContainerOutlineColor
     const {x, y} = this.beatContainerToCoordinate(beat)
-    this.ctx.strokeRect(x, y, beatContainerHeight, beatContainerWidth)
+    this.ctx.strokeRect(x, y, beatContainerHeight, this.beatContainerWidth())
 
     this.resetFill()
   }
