@@ -11,7 +11,7 @@ const beatContainerHeight = rowHeight
 const beatHeight = 12
 const beatWidth = 35
 const beatStrokeWidth = 1
-const chordWidthCorrection = 0
+const chordWidthCorrection = 10
 const chordHeightCorrection = 40
 const chordFontSizeString = '40'
 
@@ -22,12 +22,11 @@ const lyricHeightCorrection = -15
 const backgroundColor = "#222"
 
 const currentBeatColor = "#ffcc00"
-const inactiveBeatColor = backgroundColor //"#00ccaa"
+const inactiveBeatColor = backgroundColor // "#00ccaa"
 const beatOutlineColor = "#ccc"
 
 const upcomingLyricColor = "#fff"
 const pastLyricColor = currentBeatColor
-
 
 const debugBeatContainerOutlineColor = "#444"
 
@@ -51,8 +50,8 @@ class Scroller extends Component {
   //   const beatRow = Math.floor((beat - 1) / beatsPerLine) + 1
 
   //   const meta = {
-  //     'beatsPerLine': beatsPerLine, 
-  //     'activeRow': activeRow, 
+  //     'beatsPerLine': beatsPerLine,
+  //     'activeRow': activeRow,
   //     'beatRow': beatRow
   //   }
   //   console.log(meta)
@@ -73,7 +72,7 @@ class Scroller extends Component {
 
     const x = ((beat - 1) % beatsPerLine) * this.beatContainerWidth()
     const lineComplete = ((this.state.displayBeat - 1) % beatsPerLine) / beatsPerLine
-    const y = (beatRow + 1 - activeRow) * rowHeight - rowHeight * lineComplete 
+    const y = (beatRow + 1 - activeRow) * rowHeight - rowHeight * lineComplete
     return {x, y}
   }
 
@@ -93,9 +92,9 @@ class Scroller extends Component {
     const activeRow = Math.floor((this.state.displayBeat - 1) / beatsPerLine) + 1
     const beatRow = Math.floor((beat - 1) / beatsPerLine) + 1
 
-    const x = ((beat - 1) % beatsPerLine) * this.beatContainerWidth() +  chordWidthCorrection
+    const x = ((beat - 1) % beatsPerLine) * this.beatContainerWidth() + chordWidthCorrection
     const lineComplete = ((this.state.displayBeat - 1) % beatsPerLine) / beatsPerLine
-    const y = (beatRow + 1 - activeRow) * rowHeight - rowHeight * lineComplete  + chordHeightCorrection
+    const y = (beatRow + 1 - activeRow) * rowHeight - rowHeight * lineComplete + chordHeightCorrection
     return {x, y}
   }
 
@@ -129,17 +128,17 @@ class Scroller extends Component {
     this.ctx.fillStyle = fillStyle || current ? currentBeatColor : inactiveBeatColor
     this.ctx.strokeStyle = beatOutlineColor
     const {x, y} = this.beatToCoordinate(beat)
-    //this.ctx.fillRect(x, y, beatHeight, beatWidth)
-    
+    // this.ctx.fillRect(x, y, beatHeight, beatWidth)
+
     this.ctx.beginPath()
     this.ctx.arc(x, y, beatHeight, 0, 2 * Math.PI, false)
 
-    this.ctx.lineWidth = beatStrokeWidth;
-    this.ctx.strokeStyle = beatOutlineColor;
-    this.ctx.stroke();
+    this.ctx.lineWidth = beatStrokeWidth
+    this.ctx.strokeStyle = beatOutlineColor
+    this.ctx.stroke()
     this.ctx.fill()
     this.ctx.closePath()
-    //this.resetFill()
+    // this.resetFill()
   }
 
   visibleBeats () {
@@ -153,10 +152,10 @@ class Scroller extends Component {
   }
 
   drawBackground () {
-    this.ctx.beginPath();
-    this.ctx.rect(0, 0, this.state.width, this.state.height);
-    this.ctx.fillStyle = backgroundColor;
-    this.ctx.fill();
+    this.ctx.beginPath()
+    this.ctx.rect(0, 0, this.state.width, this.state.height)
+    this.ctx.fillStyle = backgroundColor
+    this.ctx.fill()
   }
 
   drawBeats () {
@@ -241,7 +240,7 @@ class Scroller extends Component {
   }
 
   resetFill () {
-    this.ctx.fillStyle = backgroundColor;
+    this.ctx.fillStyle = backgroundColor
   }
 
   componentDidMount () {
