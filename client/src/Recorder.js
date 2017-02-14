@@ -21,6 +21,14 @@ class Recorder extends Component {
 
   componentDidMount () {
     this.fetchSong()
+    $('body').on('keydown', (e) => {
+      if (e.keyCode === 37) {
+        this.backMeasure()
+      } else if (e.keyCode === 39) {
+        this.forwardMeasure()
+      }
+      // TODO also handle numpad for chords
+    })
     this.playerTimeInterval = setInterval(() => {
       this.setState({update: Date.now()})
     }, 200) // force render
@@ -29,6 +37,16 @@ class Recorder extends Component {
   componentWillUnmount () {
     $('body').unbind('keydown')
     clearInterval(this.playerTimeInterval)
+  }
+
+  forwardMeasure () {
+    let frontIndex = this.state.beats.findIndex((b) => b.time > this.player.currentTime)
+    this.player.currentTime = this.state.beats[frontIndex + 3].time
+  }
+
+  backMeasure () {
+    let frontIndex = this.state.beats.findIndex((b) => b.time > this.player.currentTime)
+    this.player.currentTime = this.state.beats[frontIndex - 4].time
   }
 
   fetchSong () {
