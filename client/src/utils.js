@@ -18,10 +18,6 @@ const quantizeSong = function ({beats, chords, lyrics}) {
       qLyrics.push(({beat: i + position, lyric: lyric.lyric}))
     }
   }
-  
-  console.log(beats)
-  console.log(qChords)
-  console.log(qLyrics)
   return {
     chords: qChords,
     lyrics: qLyrics
