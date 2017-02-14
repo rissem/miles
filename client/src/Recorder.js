@@ -1,8 +1,7 @@
-
 import React, { Component } from 'react'
 //import Scroller from './Scroller'
 import $ from 'jquery'
-// import utils from './utils'
+import utils from './utils'
 
 class Recorder extends Component {
   constructor (props) {
@@ -23,11 +22,8 @@ class Recorder extends Component {
   componentDidMount () {
     this.fetchSong()
     this.playerTimeInterval = setInterval(() => {
-      this.player = document.getElementsByTagName('audio')[0]
-      if (this.player) {
-        this.setState({playerTime: this.player.currentTime})
-      }
-    }, 200)
+      this.setState({update: Date.now()})
+    }, 200) // force render
   }
 
   componentWillUnmount () {
@@ -38,13 +34,17 @@ class Recorder extends Component {
   fetchSong () {
     $.getJSON(`/song/${this.props.songId}`).done((result) => {
       this.setState({
-        'song': result
+        'song': result,
+        'chords': result.data.chords,
+        'beats': result.data.beats,
+        'lyrics': result.data.lyrics
       })
     })
   }
 
   startSong () {
     setTimeout(() => {
+      this.player = $('#audioPlayer')[0]
       this.player.currentTime = 0
       this.player.play()
     }, 500)
@@ -59,13 +59,13 @@ class Recorder extends Component {
   chordRecorder (chord) {
     console.log('record chord', chord)
     this.setState((prevState, props) => {
-      return {chords: prevState.chords.concat({time: this.player.currentTime, chord})}
+      return {chords: prevState.chords.concat({time: this.player.currentTime, chord}).sort((a, b) => a.time > b.time ? 1 : -1)}
     })
   }
 
   lyricRecorder (lyric) {
     this.setState((prevState, props) => {
-      return {lyrics: prevState.lyrics.concat({time: this.player.currentTime, lyric})}
+      return {lyrics: prevState.lyrics.concat({time: this.player.currentTime, lyric}).sort((a, b) => a.time > b.time ? 1 : -1)}
     })
   }
 
@@ -77,24 +77,40 @@ class Recorder extends Component {
   }
 
   render () {
+    this.player = document.getElementById('audioPlayer')
     if (!this.state.song) {
       return <h2>Loading...</h2>
     }
-    // const song = utils.quantizeSong({
-    //   beats: this.state.beats,
-    //   chords: this.state.chords,
-    //   lyrics: this.state.lyrics
-    // })
-//    let beats = this.state.beats
-//    let beat = beats.findIndex((b) => b.time > this.state.playerTime)
-//    beat = beat !== -1 ? beat++ : beats.length
+    const song = utils.quantizeSong({
+      beats: this.state.beats,
+      chords: this.state.chords,
+      lyrics: this.state.lyrics
+    })
+    let beat = null
+    const beats = this.state.beats
+    if (this.state.beats.length >= 2 && this.player) {
+      const beatLength = (this.state.beats[this.state.beats.length - 1].time - this.state.beats[0].time) / (this.state.beats.length - 1) * 1000
+      const firstBeat = this.state.beats[0].time
+      const lastBeat = this.state.beats[this.state.beats.length - 1].time
+      if (this.player.currentTime < firstBeat) {
+        beat = null
+      } else if (this.player.currentTime >= lastBeat) {
+        beat = this.state.beats.length + (this.player.currentTime - lastBeat) / (beatLength / 1000)
+      } else {
+        let frontIndex = beats.findIndex((b) => b.time > this.player.currentTime)
+        let backIndex = frontIndex - 1
+        beat = backIndex + (this.player.currentTime - this.state.beats[backIndex].time) /
+          (this.state.beats[frontIndex].time - this.state.beats[backIndex].time) + 1
+      }
+    }
+    // separately handle case where beat is ahead of
 
     return (
       <div>
         <div id="header">
           <div id="song">
             <h2>Record {this.state.song.title} - {this.state.song.original_artist}</h2>
-            <audio style={{float: 'left'}} controls src={this.state.song.file} />
+            <audio id="audioPlayer" style={{float: 'left'}} controls src={this.state.song.file} />
             <div style={{clear: 'both'}}></div>
           </div>
           <div className='recorderControls'>
@@ -107,11 +123,12 @@ class Recorder extends Component {
           </div>
         </div>
         <div style={{clear: 'both'}} />
-        {/* <Scroller measure={this.state.measure}
+        <Scroller measure={this.state.measure}
           beat={beat}
-          beatLength={beats.length >= 10 ? (beats[9].time - beats[0].time) / 10 : 600}
+          beatTime={Date.now()}
+          beatLength={beats.length >= 4 ? (beats[beats.length - 1].time - beats[0].time) / beats.length * 1000 : 600}
           song={song}
-        /> */}
+        />
       </div>
     )
   }
