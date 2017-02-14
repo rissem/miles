@@ -53,9 +53,9 @@ class Recorder extends Component {
     $.getJSON(`/song/${this.props.songId}`).done((result) => {
       this.setState({
         'song': result,
-        'chords': result.data.chords,
-        'beats': result.data.beats,
-        'lyrics': result.data.lyrics
+        'chords': result.data ? result.data.chords : [],
+        'beats': result.data ? result.data.beats : [],
+        'lyrics': result.data ? result.data.lyrics : []
       })
     })
   }
