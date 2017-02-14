@@ -8,17 +8,25 @@ const minimumBeatContainerWidth = 150
 const rowHeight = 200
 const beatContainerHeight = rowHeight
 
-const beatHeight = 35
+const beatHeight = 12
 const beatWidth = 35
-const chordWidthCorrection = 12
-const chordHeightCorrection = 12
+const beatStrokeWidth = 1
+const chordWidthCorrection = 0
+const chordHeightCorrection = 40
 const chordFontSizeString = '40'
+
+const lyricFontSizeString = '30'
+const lyricWidthCorrection = 0
+const lyricHeightCorrection = -15
 
 const backgroundColor = "#222"
 
 const currentBeatColor = "#ffcc00"
 const inactiveBeatColor = backgroundColor //"#00ccaa"
 const beatOutlineColor = "#ccc"
+
+const upcomingLyricColor = "#fff"
+const pastLyricColor = currentBeatColor
 
 
 const debugBeatContainerOutlineColor = "#444"
@@ -28,7 +36,8 @@ class Scroller extends Component {
   constructor (props) {
     super(props)
     this.state = {
-      drawDebug: true
+      drawDebug: false,
+      logDebug: false
     }
   }
 
@@ -36,27 +45,30 @@ class Scroller extends Component {
     return Math.floor(Math.floor(this.state.width / minimumBeatContainerWidth) / 4) * 4
   }
 
-  beatMeta (beat) {
-    const beatsPerLine = this.beatsPerLine()
-    const activeRow = Math.floor((this.state.displayBeat - 1) / beatsPerLine) + 1
-    const beatRow = Math.floor((beat - 1) / beatsPerLine) + 1
+  // calculateBeatMeta (beat) {
+  //   const beatsPerLine = this.beatsPerLine()
+  //   const activeRow = Math.floor((this.state.displayBeat - 1) / beatsPerLine) + 1
+  //   const beatRow = Math.floor((beat - 1) / beatsPerLine) + 1
 
-    return {
-      'beatsPerLine': beatsPerLine, 
-      'activeRow': activeRow, 
-      'beatRow': beatRow
-    }
-  }
+  //   const meta = {
+  //     'beatsPerLine': beatsPerLine, 
+  //     'activeRow': activeRow, 
+  //     'beatRow': beatRow
+  //   }
+  //   console.log(meta)
+  //   console.log(beat)
+  //   return meta
+  // }
 
   beatContainerWidth () {
-    return Math.floor(this.state.width / this.beatsPerLine())
+    // return minimumBeatContainerWidth
+    return Math.floor(this.state.width / (this.beatsPerLine() + 1))
   }
 
   beatContainerToCoordinate (beat) {
-    const beatMeta = this.beatMeta()
-    const beatsPerLine = beatMeta['beatsPerLine'] 
-    const activeRow = beatMeta['activeRow'] 
-    const beatRow = beatMeta['beatRow'] 
+    const beatsPerLine = this.beatsPerLine()
+    const activeRow = Math.floor((this.state.displayBeat - 1) / beatsPerLine) + 1
+    const beatRow = Math.floor((beat - 1) / beatsPerLine) + 1
     // beat row is the second row
 
     const x = ((beat - 1) % beatsPerLine) * this.beatContainerWidth()
@@ -66,26 +78,35 @@ class Scroller extends Component {
   }
 
   beatToCoordinate (beat) {
-    const beatMeta = this.beatMeta()
-    const beatsPerLine = beatMeta['beatsPerLine'] 
-    const activeRow = beatMeta['activeRow'] 
-    const beatRow = beatMeta['beatRow'] 
+    const beatsPerLine = this.beatsPerLine()
+    const activeRow = Math.floor((this.state.displayBeat - 1) / beatsPerLine) + 1
+    const beatRow = Math.floor((beat - 1) / beatsPerLine) + 1
 
-    const x = ((beat - 1) % beatsPerLine) * this.beatContainerWidth() + (this.beatContainerWidth() / 2)
+    const x = ((beat - 1) % beatsPerLine) * this.beatContainerWidth() + (beatWidth / 2)
     const lineComplete = ((this.state.displayBeat - 1) % beatsPerLine) / beatsPerLine
-    const y = (beatRow + 1 - activeRow) * rowHeight - rowHeight * lineComplete + (rowHeight / 2) // - (beatHeight / 2))
+    const y = (beatRow + 1 - activeRow) * rowHeight - rowHeight * lineComplete + (rowHeight / 2)
     return {x, y}
   }
 
   beatToChordCoordinate (beat) {
-    const beatMeta = this.beatMeta()
-    const beatsPerLine = beatMeta['beatsPerLine'] 
-    const activeRow = beatMeta['activeRow'] 
-    const beatRow = beatMeta['beatRow'] 
+    const beatsPerLine = this.beatsPerLine()
+    const activeRow = Math.floor((this.state.displayBeat - 1) / beatsPerLine) + 1
+    const beatRow = Math.floor((beat - 1) / beatsPerLine) + 1
 
-    const x = ((beat - 1) % beatsPerLine) * this.beatContainerWidth() + ((this.beatContainerWidth() / 2) - chordWidthCorrection )
+    const x = ((beat - 1) % beatsPerLine) * this.beatContainerWidth() +  chordWidthCorrection
     const lineComplete = ((this.state.displayBeat - 1) % beatsPerLine) / beatsPerLine
-    const y = (beatRow + 1 - activeRow) * rowHeight - rowHeight * lineComplete + ((rowHeight / 2)  + chordHeightCorrection)
+    const y = (beatRow + 1 - activeRow) * rowHeight - rowHeight * lineComplete  + chordHeightCorrection
+    return {x, y}
+  }
+
+  beatToLyricCoordinate (beat) {
+    const beatsPerLine = this.beatsPerLine()
+    const activeRow = Math.floor((this.state.displayBeat - 1) / beatsPerLine) + 1
+    const beatRow = Math.floor((beat - 1) / beatsPerLine) + 1
+
+    const x = ((beat - 1) % beatsPerLine) * this.beatContainerWidth() + (beatWidth / 2) + lyricWidthCorrection
+    const lineComplete = ((this.state.displayBeat - 1) % beatsPerLine) / beatsPerLine
+    const y = (beatRow + 1 - activeRow) * rowHeight - rowHeight * lineComplete + (rowHeight / 2) + lyricHeightCorrection
     return {x, y}
   }
 
@@ -96,7 +117,7 @@ class Scroller extends Component {
   drawBeatContainer (beat) {
     this.ctx.strokeStyle = debugBeatContainerOutlineColor
     const {x, y} = this.beatContainerToCoordinate(beat)
-    this.ctx.strokeRect(x, y, beatContainerHeight, this.beatContainerWidth())
+    this.ctx.strokeRect(x, y, this.beatContainerWidth(), beatContainerHeight)
 
     this.resetFill()
   }
@@ -113,7 +134,7 @@ class Scroller extends Component {
     this.ctx.beginPath()
     this.ctx.arc(x, y, beatHeight, 0, 2 * Math.PI, false)
 
-    this.ctx.lineWidth = 5;
+    this.ctx.lineWidth = beatStrokeWidth;
     this.ctx.strokeStyle = beatOutlineColor;
     this.ctx.stroke();
     this.ctx.fill()
@@ -156,7 +177,7 @@ class Scroller extends Component {
         this.ctx.fontStyle = 'extra-strong'
         this.ctx.font = chordFontSizeString + 'px Helvetica'
         this.ctx.fillText(chord.chord, x, y)
-        if (this.state.drawDebug) {
+        if (this.state.logDebug) {
           console.log("drawing chord:", chord.chord)
         }
       }
@@ -170,11 +191,11 @@ class Scroller extends Component {
     this.props.song.lyrics.forEach((lyric) => {
       if (lyric.beat > firstBeat && lyric.beat < lastBeat) {
         const passed = lyric.beat < this.state.displayBeat
-        const {x, y} = this.beatToCoordinate(lyric.beat)
-        this.ctx.fillStyle = passed ? 'red' : 'black'
-        this.ctx.font = '30px Times New Roman'
+        const {x, y} = this.beatToLyricCoordinate(lyric.beat)
+        this.ctx.fillStyle = passed ? pastLyricColor : upcomingLyricColor
+        this.ctx.font = lyricFontSizeString + 'px Helvetica'
         this.ctx.fillText(lyric.lyric, x, y + 100)
-        if (this.state.drawDebug) {
+        if (this.state.logDebug) {
           console.log("drawing lyric:", lyric.lyric)
         }
       }
@@ -207,6 +228,8 @@ class Scroller extends Component {
     if (Date.now() - now > 50) console.log('SLOW FRAME', Date.now() - now)
     this.ctx.clearRect(0, 0, this.state.width, this.state.height)
 
+    // this.beatMeta = this.calculateBeatMeta(this.beat)
+
     this.drawBackground()
     this.drawBeats()
     this.drawLyrics()
@@ -226,7 +249,7 @@ class Scroller extends Component {
     // TODO figure out how to get it to be exactly 100%, scrap the "- 20"
     const height = window.innerHeight - $('#canvas').position().top - 20
     const width = window.innerWidth - 20
-    if (this.state.drawDebug) {
+    if (this.state.logDebug) {
       console.log("h: ", height)
       console.log("w: ", width)
     }
