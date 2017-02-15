@@ -170,7 +170,7 @@ class Scroller extends Component {
     if (!this.props.song || !this.props.song.chords) return
     const [firstBeat, lastBeat] = this.visibleBeats()
     this.props.song.chords.forEach((chord) => {
-      if (chord.beat > firstBeat && chord.beat < lastBeat) {
+      if (chord.beat >= firstBeat && chord.beat < lastBeat) {
         const {x, y} = this.beatToChordCoordinate(chord.beat)
         this.ctx.fillStyle = 'white'
         this.ctx.fontStyle = 'extra-strong'
