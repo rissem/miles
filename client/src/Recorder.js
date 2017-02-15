@@ -46,7 +46,8 @@ class Recorder extends Component {
 
   backMeasure () {
     let frontIndex = this.state.beats.findIndex((b) => b.time > this.player.currentTime)
-    this.player.currentTime = this.state.beats[frontIndex - 4].time
+    let newIndex = frontIndex >= 4 ? frontIndex - 4 : 0
+    this.player.currentTime = this.state.beats[newIndex].time
   }
 
   fetchSong () {
@@ -141,6 +142,7 @@ class Recorder extends Component {
           </div>
         </div>
         <div style={{clear: 'both'}} />
+        <div>Navigate with left/right arrow keys</div>
         <Scroller measure={this.state.measure}
           beat={beat}
           beatTime={Date.now()}
@@ -183,6 +185,15 @@ class ChordRecorder extends Component {
     this.addChord = this.addChord.bind(this)
   }
 
+  componentDidMount () {
+    $('body').on('keydown', (e) => {
+      if (e.keyCode >= 49 && e.keyCode <= 57) {
+        this.props.chordRecorder(this.state.chords[e.keyCode - 49])
+      }
+    })
+  }
+  // HACK unbinding handled by parent
+
   addChord () {
     this.setState((prevState, props) => {
       let chords = document.getElementById('chord').value.split(' ')
@@ -200,9 +211,10 @@ class ChordRecorder extends Component {
       </div>
     )
 
+    let chordNum = 1
     let chordButtons = this.state.chords.map((chord) => {
       return <button onMouseDown={() => { this.props.chordRecorder(chord) }}
-        style={{margin: 20}} key={Math.random()}>{chord}</button>
+        style={{margin: 20}} key={Math.random()}>{chord} ({chordNum++})</button>
     })
     let chordSetter = (
       <div>
