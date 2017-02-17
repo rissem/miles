@@ -24,7 +24,17 @@ class Player extends Component {
 
   triangle () {
     this.setState((prevState, props) => {
-      return {beat: ++prevState.beat, beatTime: Date.now()}
+      let now = Date.now()
+      let newState = {}
+      newState.beat = ++prevState.beat
+      newState.beatTime = now
+      newState.beats = prevState.beats.concat(now)
+      if (newState.beats.length >= 5) {
+        let lastBeat = newState.beats[newState.beats.length - 1]
+        let fourBeatsAgo = newState.beats[newState.beats.length - 5]
+        newState.beatLength = (lastBeat - fourBeatsAgo) / 4
+      }
+      return newState
     })
   }
 
@@ -34,6 +44,7 @@ class Player extends Component {
       this.setState({
         'rawSong': result,
         'beat': 0,
+        'beats': [],
         // average time between first and tenth beats then convert from ms between beats to bpm
         'beatLength': (result.data.beats[lastBeat].time - result.data.beats[0].time) / 10 * 1000,
         'quantizedSong': utils.quantizeSong(result.data)
