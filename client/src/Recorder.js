@@ -17,6 +17,7 @@ class Recorder extends Component {
     this.chordRecorder = this.chordRecorder.bind(this)
     this.beatRecorder = this.beatRecorder.bind(this)
     this.lyricRecorder = this.lyricRecorder.bind(this)
+    this.chordClick = this.chordClick.bind(this)
   }
 
   componentDidMount () {
@@ -88,6 +89,18 @@ class Recorder extends Component {
     })
   }
 
+  chordClick (chord) {
+    console.log("remove chord", chord.chord)
+    let beat = chord.beat
+    this.setState((prevState, props) => {
+      let beats = prevState.beats
+      return {chords: prevState.chords.filter((c2) => {
+        return !(c2.time > (beats[beat - 1].time + beats[beat - 2].time) / 2 &&
+        c2.time < (beats[beat - 1].time + beats[beat].time) / 2)
+      })}
+    })
+  }
+
   save () {
     $.post(`/song/${this.props.songId}`, {data: JSON.stringify({
       beats: this.state.beats,
@@ -148,6 +161,7 @@ class Recorder extends Component {
           beatTime={Date.now()}
           beatLength={beats.length >= 4 ? (beats[beats.length - 1].time - beats[0].time) / beats.length * 1000 : 600}
           song={song}
+          chordClick={this.chordClick}
         />
       </div>
     )

@@ -30,10 +30,10 @@ const pastLyricColor = currentBeatColor
 
 const debugBeatContainerOutlineColor = "#444"
 
-let now = Date.now()
 class Scroller extends Component {
   constructor (props) {
     super(props)
+    this.clickable = {}
     this.state = {
       drawDebug: false,
       logDebug: false
@@ -109,10 +109,6 @@ class Scroller extends Component {
     return {x, y}
   }
 
-  drawLyric (lyric) {
-    console.log('draw lyric', lyric)
-  }
-
   drawBeatContainer (beat) {
     this.ctx.strokeStyle = debugBeatContainerOutlineColor
     const {x, y} = this.beatContainerToCoordinate(beat)
@@ -167,6 +163,7 @@ class Scroller extends Component {
   }
 
   drawChords () {
+    this.handlers = []
     if (!this.props.song || !this.props.song.chords) return
     const [firstBeat, lastBeat] = this.visibleBeats()
     this.props.song.chords.forEach((chord) => {
@@ -175,6 +172,10 @@ class Scroller extends Component {
         this.ctx.fillStyle = 'white'
         this.ctx.fontStyle = 'extra-strong'
         this.ctx.font = chordFontSizeString + 'px Helvetica'
+        const measurement = this.ctx.measureText(chord.chord)
+        const height = parseInt(chordFontSizeString, 10)
+        this.handlers.push({chord, x, y, width: measurement.width, height})
+//        this.ctx.fillRect(x, y, measurement.width, -1 * parseInt(chordFontSizeString))
         this.ctx.fillText(chord.chord, x, y)
         if (this.state.logDebug) {
           console.log("drawing chord:", chord.chord)
@@ -182,7 +183,6 @@ class Scroller extends Component {
       }
     })
   }
-  drawGuides () {}
 
   drawLyrics () {
     if (!this.props.song || !this.props.song.lyrics) return
@@ -220,11 +220,10 @@ class Scroller extends Component {
   }
 
   draw (lastDraw) {
-    now = Date.now()
     if (this.unmounted) return
     this.updateBeats(lastDraw)
     this.beat = this.props.beat + (Date.now() - this.props.lastBeat)
-    if (Date.now() - now > 50) console.log('SLOW FRAME', Date.now() - now)
+    if (Date.now() - this.lastDraw > 50) console.log('SLOW FRAME', Date.now() - this.lastDraw)
     this.ctx.clearRect(0, 0, this.state.width, this.state.height)
 
     // this.beatMeta = this.calculateBeatMeta(this.beat)
@@ -234,7 +233,6 @@ class Scroller extends Component {
     this.drawLyrics()
     this.drawChords()
     this.drawCursor()
-    this.drawGuides()
     window.requestAnimationFrame(() => this.draw(this.lastDraw))
     this.lastDraw = Date.now()
   }
@@ -255,6 +253,24 @@ class Scroller extends Component {
     this.ctx = document.getElementById('canvas').getContext('2d')
     this.setState({height, width})
     window.requestAnimationFrame(() => this.draw())
+
+    $('canvas').mousedown((e) => {
+      this.mouseDown = {x: e.clientX, y: e.clientY}
+    })
+
+    $('canvas').mouseup((e) => {
+      if (e.clientX === this.mouseDown.x && e.clientY === this.mouseDown.y) {
+        this.handlers.forEach((handler) => {
+          if (e.offsetX > handler.x && e.offsetX < handler.x + handler.width &&
+            e.offsetY < handler.y && e.offsetY > handler.y - handler.height
+          ) {
+            if (this.props.chordClick) {
+              this.props.chordClick(handler.chord)
+            }
+          }
+        })
+      }
+    })
   }
 
   componentWillUnmount () {

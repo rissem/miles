@@ -30,7 +30,6 @@ class Player extends Component {
 
   fetchSong () {
     $.getJSON(`/song/${this.props.songId}`).done((result) => {
-      console.log(result)
       let lastBeat = result.data.beats.length > 10 ? 10 : result.data.beats.length - 1
       this.setState({
         'rawSong': result,
