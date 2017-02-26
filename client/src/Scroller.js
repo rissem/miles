@@ -44,21 +44,6 @@ class Scroller extends Component {
     return Math.floor(Math.floor(this.state.width / minimumBeatContainerWidth) / 4) * 4
   }
 
-  // calculateBeatMeta (beat) {
-  //   const beatsPerLine = this.beatsPerLine()
-  //   const activeRow = Math.floor((this.state.displayBeat - 1) / beatsPerLine) + 1
-  //   const beatRow = Math.floor((beat - 1) / beatsPerLine) + 1
-
-  //   const meta = {
-  //     'beatsPerLine': beatsPerLine,
-  //     'activeRow': activeRow,
-  //     'beatRow': beatRow
-  //   }
-  //   console.log(meta)
-  //   console.log(beat)
-  //   return meta
-  // }
-
   beatContainerWidth () {
     // return minimumBeatContainerWidth
     return Math.floor(this.state.width / (this.beatsPerLine() + 1))

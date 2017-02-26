@@ -52,6 +52,7 @@ class Recorder extends Component {
   }
 
   fetchSong () {
+    if (this.fetchSongId === this.props.songId) return
     $.getJSON(`/song/${this.props.songId}`).done((result) => {
       this.setState({
         'song': result,
@@ -60,6 +61,7 @@ class Recorder extends Component {
         'lyrics': result.data ? result.data.lyrics : []
       })
     })
+    this.fetchSongId = this.props.songId
   }
 
   startSong () {
@@ -109,6 +111,7 @@ class Recorder extends Component {
   }
 
   render () {
+    this.fetchSong()
     this.player = document.getElementById('audioPlayer')
     if (!this.state.song) {
       return <h2>Loading...</h2>
