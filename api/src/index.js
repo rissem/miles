@@ -1,11 +1,30 @@
 const express = require('express')
+const http = require('http')
 const app = express()
 const bodyParser = require('body-parser')
 const db = require('./db')
+const WebSocket = require('ws')
+const url = require('url')
 
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
 app.use(express.static('public'))
+
+const server = http.createServer(app)
+const wss = new WebSocket.Server({ server })
+wss.on('connection', function connection(ws, req) {
+  const location = url.parse(req.url, true)
+  console.log('connected', req.url, location)
+  ws.on('message', function incoming(message) {
+    console.log('received: %s', message)
+  })
+
+  ws.send('something')
+
+  setInterval(()=>{
+    ws.send("heartbeat")
+  }, 5000)
+})
 
 app.get('/songs', function (req, res) {
   db.query('SELECT id, original_artist, title from songs ORDER BY title', []).then((result) => {
@@ -34,6 +53,6 @@ app.post('/song/:id', function (req, res) {
   })
 })
 
-app.listen(3000, function () {
-  console.log('Miles API listening on port 3000!')
+server.listen(3000, function () {
+  console.log(`Miles API listening on port ${server.address().port}`)
 })
