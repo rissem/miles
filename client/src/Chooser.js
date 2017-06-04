@@ -21,7 +21,10 @@ class Chooser extends Component {
   onSelect (e) {
     if (e.target.value) {
       const id = parseInt(e.target.value, 10)
-      this.setState({chosenSong: this.state.songs.find((s) => s.id === id)})
+      $.post(`/selectSong/${id}`).done((result)=>{
+        console.log("EH?")
+        this.setState({chosenSong: this.state.songs.find((s) => s.id === id)})
+      })
     }
   }
 

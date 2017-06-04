@@ -12,14 +12,25 @@ const config = {
 
 const pool = new pg.Pool(config)
 
-pool.query(`CREATE TABLE IF NOT EXISTS songs (
-    id serial,
-    created timestamptz,
-    original_artist varchar(200),
-    title varchar(200),
-    file varchar(200),
-    data jsonb
-  )`)
+// HACK node starts up quicker than postgres
+setTimeout(()=>{
+  pool.query(`CREATE TABLE IF NOT EXISTS songs (
+      id serial,
+      created timestamptz,
+      original_artist varchar(200),
+      title varchar(200),
+      file varchar(200),
+      data jsonb,
+      PRIMARY KEY(id)
+    )`).then(()=>{
+      pool.query(`
+        CREATE TABLE IF NOT EXISTS selected (
+          selected_at timestamp with time zone,
+          song_id integer NOT NULL REFERENCES songs(id)
+        )
+      `)
+    })
+}, 10000)
 
 module.exports = {
   query: (q, args) => {

@@ -7,4 +7,6 @@ RUN yarn
 ADD src /app/src
 
 ADD public /app/public
-CMD nodemon /app/src/index.js
+# -L legacy watching required on Mac
+# http://fostertheweb.com/2016/02/nodemon-inside-docker-container/
+CMD nodemon -L /app/src/index.js
