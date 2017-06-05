@@ -23,6 +23,7 @@ class Player extends Component {
   }
 
   triangle () {
+    $.post(`/triangle`).done(()=>console.log("triangle done"))
     this.setState((prevState, props) => {
       let now = Date.now()
       let newState = {}

@@ -1,8 +1,6 @@
 _ = require('underscore')
 
 const quantizeSong = function (song) {
-  console.log('quantize song', song)
-
   beats = song.data.beats.slice()
   chords = song.data.chords.slice()
   lyrics = song.data.lyrics.slice()

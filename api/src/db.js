@@ -30,6 +30,11 @@ setTimeout(()=>{
         )
       `)
     })
+  pool.query(`CREATE TABLE IF NOT EXISTS events (
+    event_type varchar(200),
+    event_data jsonb,
+    event_at timestamptz
+  )`)
 }, 10000)
 
 module.exports = {
