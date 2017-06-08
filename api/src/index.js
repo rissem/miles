@@ -28,6 +28,7 @@ function broadcastBeats(){
     .then((result) =>{
       // first 4 beats are are counting in the song
       const lastBeat = result.rows[result.rows.length - 1]
+      if (!lastBeat) return
       wss.broadcast(JSON.stringify({beat: result.rows.length - 4,
         time: lastBeat.event_at,
         beatLength: result.rows.length > 4 && (lastBeat.event_at - result.rows[result.rows.length - 4].event_at) / 4
@@ -38,7 +39,7 @@ function broadcastBeats(){
 function currentSong() {
   return db.query(`SELECT * FROM songs WHERE id=(SELECT song_id from
     SELECTED ORDER BY selected_at DESC LIMIT 1)`, []).then((result) => {
-      return quantizeSong(result.rows[0])
+      if (result.rows[0]) return quantizeSong(result.rows[0])
     })
 }
 
