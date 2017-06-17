@@ -23,6 +23,10 @@ class Recorder extends Component {
   componentDidMount () {
     this.fetchSong()
     $('body').on('keydown', (e) => {
+      if (e.keyCode === 32) {
+        this.player.paused ? this.player.play() : this.player.pause()
+      }
+
       if (e.keyCode === 37) {
         this.backMeasure()
       } else if (e.keyCode === 39) {
