@@ -1,2 +1,2 @@
 #! /bin/bash
-docker-compose run --rm postgres pg_dump -h postgres -U postgres postgres > dump
+docker run --network miles_default  -v `pwd`:/app -it --rm postgres /app/containerDump.sh
