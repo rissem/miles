@@ -8,7 +8,8 @@
     "react-scripts": "^0.8.4",
     "jquery": "^3.1.1",
     "react-konva": "^1.1.1",
-    "konva":"^1.2.2"
+    "konva":"^1.2.2",
+    "underscore":"^1.8.3"
   },
   "scripts": {
     "start": "react-scripts start",

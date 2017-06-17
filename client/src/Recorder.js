@@ -2,6 +2,7 @@ import React, { Component } from 'react'
 import Scroller from './Scroller'
 import $ from 'jquery'
 import utils from './utils'
+import _ from 'underscore'
 
 class Recorder extends Component {
   constructor (props) {
@@ -29,8 +30,10 @@ class Recorder extends Component {
 
       if (e.keyCode === 37) {
         this.backMeasure()
+        e.preventDefault()
       } else if (e.keyCode === 39) {
         this.forwardMeasure()
+        e.preventDefault()
       }
       // TODO also handle numpad for chords
     })
@@ -89,14 +92,15 @@ class Recorder extends Component {
     })
   }
 
-  lyricRecorder (lyric) {
+  lyricRecorder (word) {
     this.setState((prevState, props) => {
-      return {lyrics: prevState.lyrics.concat({time: this.player.currentTime, lyric}).sort((a, b) => a.time > b.time ? 1 : -1)}
+      return {lyrics: prevState.lyrics.concat(
+        {time: this.player.currentTime, lyric: word.lyric, startOfLine: word.startOfLine})
+        .sort((a, b) => a.time > b.time ? 1 : -1)}
     })
   }
 
   chordClick (chord) {
-    console.log("remove chord", chord.chord)
     let beat = chord.beat
     this.setState((prevState, props) => {
       let beats = prevState.beats
@@ -261,7 +265,14 @@ class LyricRecorder extends Component {
 
   convertLyrics () {
     const text = document.getElementById('pastedLyrics').value
-    this.setState({lyrics: text.split(/\s+/)})
+    const words = text.split(/\n+/).map((line)=> line.split(/\s+/))
+    .map(([firstElement, ...rest])=>{
+      return [
+        {lyric: firstElement, startOfLine: true},
+        ...rest.map((element)=> {return {lyric: element, startOfLine: false}})
+      ]
+    })
+    this.setState({lyrics: _.flatten(words)})
   }
 
   addLyric () {
@@ -282,10 +293,11 @@ class LyricRecorder extends Component {
       </div>
       )
     } else {
+      // this seems like a bad way to handle keys
       let i = 0
       const buttons = this.state.lyrics.map((lyric) => {
         i += 1
-        return <button onMouseDown={this.addLyric} key={lyric + i}>{lyric}</button>
+        return <button onMouseDown={this.addLyric} key={lyric + i}>{lyric.lyric}</button>
       })
       return (
         <div style={{float: 'left', width: 400}}>
