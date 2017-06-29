@@ -29,7 +29,8 @@ function broadcastBeats(){
       // first 4 beats are are counting in the song
       const lastBeat = result.rows[result.rows.length - 1]
       if (!lastBeat) return
-      wss.broadcast(JSON.stringify({beat: result.rows.length - 4,
+      wss.broadcast(JSON.stringify({ type: "beat",
+        beat: result.rows.length - 4,
         time: lastBeat.event_at,
         beatLength: result.rows.length > 4 && (lastBeat.event_at - result.rows[result.rows.length - 4].event_at) / 4
       }))
@@ -93,6 +94,9 @@ app.post('/song/:id', function (req, res) {
 
 app.post('/selectSong/:id', function(req, res){
   db.query('INSERT INTO selected (selected_at, song_id) VALUES ($1, $2)', [new Date(), req.params.id]).then((result)=>{
+    currentSong().then((song)=>{
+      wss.broadcast(JSON.stringify(song))
+    })
     res.send("song selected")
   })
   //push this message to all of the sockets in the pool
