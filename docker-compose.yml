@@ -16,6 +16,16 @@ services:
       - "127.0.0.1:4000:3000"
     environment:
       API_HOST_PORT: "localhost:3000"
+  particle:
+    build: ./particle-app
+    volumes:
+      - "./particle-app/src:/app/src"
+      - "./particle-app/public:/app/public"
+      - "./particle-app/texture:/app/texture"
+    ports:
+      - "127.0.0.1:5000:3000"
+    environment:
+      API_HOST_PORT: "localhost:3000"
   api:
     build: ./api
     volumes:

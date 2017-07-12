@@ -1,1 +1,1 @@
-docker-compose run --rm postgres psql -h postgres -U postgres < dump
+docker run -it --network miles_default postgres "psql -h postgres -U postgres < dump"

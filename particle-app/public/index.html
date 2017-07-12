@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico">
+    <!--
+      Notice the use of %PUBLIC_URL% in the tag above.
+      It will be replaced with the URL of the `public` folder during the build.
+      Only files inside the `public` folder can be referenced from the HTML.
+
+      Unlike "/favicon.ico" or "favicon.ico", "%PUBLIC_URL%/favicon.ico" will
+      work correctly both with client-side routing and a non-root public URL.
+      Learn how to configure a non-root public URL by running `npm run build`.
+    -->
+    <title>Particle Miles</title>
+    <script src="/three.min.js"></script>
+    <script src="/GPUParticleSystem.js"></script>
+    <script>
+        var camera, tick = 0,
+            scene, renderer, clock = new THREE.Clock(),
+            controls, container, 
+            options, spawnerOptions, particleSystem;
+
+        var canvasSource, video, contextSource, contextBlended, lastImageData;
+        function init() {
+            container = document.getElementById( 'root' );
+            initVideo();
+            camera = new THREE.PerspectiveCamera( 28, window.innerWidth / window.innerHeight, 1, 10000 );
+            camera.position.z = 500;
+            scene = new THREE.Scene();
+            particleSystem = new THREE.GPUParticleSystem( {
+                maxParticles: 250000
+            } );
+            scene.add( particleSystem );
+
+            options = {
+                position: new THREE.Vector3(),
+                positionRandomness: .3,
+                velocity: new THREE.Vector3(),
+                velocityRandomness: .5,
+                color: 0xaa88ff,
+                colorRandomness: .2,
+                turbulence: .5,
+                lifetime: 2,
+                size: 10,
+                sizeRandomness: 2
+            };
+            spawnerOptions = {
+                spawnRate: 15000,
+                horizontalSpeed: 1.5,
+                verticalSpeed: 1.33,
+                timeScale: 1
+            };
+            renderer = new THREE.WebGLRenderer();
+            renderer.setPixelRatio( window.devicePixelRatio );
+            renderer.setSize( window.innerWidth, window.innerHeight );
+            renderer.setClearColor(0xffffff, 1);
+            container.appendChild( renderer.domElement );
+            //
+            controls = new THREE.TrackballControls( camera, renderer.domElement );
+            controls.rotateSpeed = 5.0;
+            controls.zoomSpeed = 2.2;
+            controls.panSpeed = 1;
+            controls.dynamicDampingFactor = 0.3;
+            window.addEventListener( 'resize', onWindowResize, false );
+        }
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize( window.innerWidth, window.innerHeight );
+        }
+
+        function initVideo() {
+            canvasSource = document.createElement('canvas');
+            canvasBlended = document.createElement('canvas');
+            canvasSource.width = canvasBlended.width = 250;
+            canvasSource.height = canvasBlended.height = 182;
+
+            center = {x: window.innerWidth / 2, y: window.innerHeight / 2};
+
+            contextBlended = canvasBlended.getContext('2d');
+            contextSource = canvasSource.getContext('2d');
+
+            video = document.createElement('video');
+            navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia || navigator.oGetUserMedia;
+            if (navigator.getUserMedia) {
+                navigator.getUserMedia({video: true}, function(stream) {
+                    video.src = window.URL.createObjectURL(stream);
+                    hasCamera = true;
+                }, function(err) {
+                });
+            }
+        }
+        function fastAbs(value) {
+            // equivalent to Math.abs();
+            return (value ^ (value >> 31)) - (value >> 31);
+        }
+
+        function threshold(value) {
+            return (value > 0x15) ? 0xFF : 0;
+        }
+
+        function differenceAccuracy(target, data1, data2) {
+            if (data1.length != data2.length) return null;
+            var i = 0;
+            var width = canvasSource.width;
+            var x = 0;
+            var y = 0;
+            var total = 0;
+            while (i < (data1.length * 0.25)) {
+                if (x >= width) {
+                    y++;
+                    x = 0;
+                }
+                var average1 = (data1[4*i] + data1[4*i+1] + data1[4*i+2]) / 3;
+                var average2 = (data2[4*i] + data2[4*i+1] + data2[4*i+2]) / 3;
+                var diff = threshold(fastAbs(average1 - average2));
+                if (diff > 0) {
+                    generateParticle(x, y, 2);
+                }
+                target[4*i] = diff;
+                target[4*i+1] = diff;
+                target[4*i+2] = diff;
+                target[4*i+3] = 0xFF;
+                ++i;
+                x++;
+            }
+        }
+
+        function blend() {
+            var width = canvasSource.width;
+            var height = canvasSource.height;
+            var sourceData = contextSource.getImageData(0, 0, width, height);
+            if (!lastImageData) {
+                lastImageData = contextSource.getImageData(0, 0, width, height);
+            }
+            var blendedData = contextSource.createImageData(width, height);
+            differenceAccuracy(blendedData.data, sourceData.data, lastImageData.data);
+            contextBlended.putImageData(blendedData, 0, 0);
+            lastImageData = sourceData;
+        }
+
+        function generateParticle(x, y, z) {
+            options.position.x = -(x - canvasSource.width / 2) * 1.5;
+            options.position.y = -(y - canvasSource.height / 2) * 1.3;
+            options.position.z = z;
+            particleSystem.spawnParticle( options );
+        }
+        function animate() {
+            requestAnimationFrame( animate );
+            // controls.update();
+            var delta = clock.getDelta() * spawnerOptions.timeScale;
+            tick += delta;
+            if ( tick < 0 ) tick = 0;
+            if ( delta > 0 ) {
+                contextSource.drawImage(video, 0, 0, canvasSource.width, canvasSource.height);
+                blend();
+            }
+            particleSystem.update( tick );
+            render();
+        }
+        function render() {
+            renderer.render( scene, camera );
+        }
+        init();
+        animate();
+    </script>
+  </head>
+  <body>
+    <div id="container">
+    </div>
+    <div id="root">
+    </div>
+    <!--
+      This HTML file is a template.
+      If you open it directly in the browser, you will see an empty page.
+
+      You can add webfonts, meta tags, or analytics to this file.
+      The build step will place the bundled scripts into the <body> tag.
+
+      To begin the development, run `npm start`.
+      To create a production bundle, use `npm run build`.
+    -->
+  </body>
+</html>
