@@ -10,7 +10,7 @@ const beatContainerHeight = rowHeight
 
 const beatHeight = 12
 const beatWidth = 35
-const beatStrokeWidth = 1
+const beatStrokeWidth = 4
 const chordWidthCorrection = 10
 const chordHeightCorrection = 40
 const chordFontSizeString = '40'
@@ -21,9 +21,11 @@ const lyricHeightCorrection = -15
 
 const backgroundColor = "#222"
 
-const currentBeatColor = "#ffcc00"
-const inactiveBeatColor = backgroundColor // "#00ccaa"
+const currentBeatColor = "#aaa"
+const pastBeatColor = "#444"
+const inactiveBeatColor = "#666"
 const beatOutlineColor = "#ccc"
+const cursorColor = "#FF0"
 
 const upcomingLyricColor = "#fff"
 const pastLyricColor = currentBeatColor
@@ -36,8 +38,13 @@ class Scroller extends Component {
     this.clickable = {}
     this.state = {
       drawDebug: false,
-      logDebug: false
+      logDebug: false,
+      offset: 0
     }
+  }
+
+  beatOffset () {
+    return this.state.offset
   }
 
   beatsPerLine () {
@@ -52,10 +59,10 @@ class Scroller extends Component {
   beatContainerToCoordinate (beat) {
     const beatsPerLine = this.beatsPerLine()
     const activeRow = Math.floor((this.state.displayBeat - 1) / beatsPerLine) + 1
-    const beatRow = Math.floor((beat - 1) / beatsPerLine) + 1
+    const beatRow = Math.floor((this.beatOffset() + beat - 1) / beatsPerLine) + 1
     // beat row is the second row
 
-    const x = ((beat - 1) % beatsPerLine) * this.beatContainerWidth()
+    const x = ((this.beatOffset() + beat - 1) % beatsPerLine) * this.beatContainerWidth()
     const lineComplete = ((this.state.displayBeat - 1) % beatsPerLine) / beatsPerLine
     const y = (beatRow + 1 - activeRow) * rowHeight - rowHeight * lineComplete
     return {x, y}
@@ -63,33 +70,33 @@ class Scroller extends Component {
 
   beatToCoordinate (beat) {
     const beatsPerLine = this.beatsPerLine()
-    const activeRow = Math.floor((this.state.displayBeat - 1) / beatsPerLine) + 1
-    const beatRow = Math.floor((beat - 1) / beatsPerLine) + 1
+    const activeRow = Math.floor((this.beatOffset() + this.state.displayBeat - 1) / beatsPerLine) + 1
+    const beatRow = Math.floor((this.beatOffset() + beat - 1) / beatsPerLine) + 1
 
-    const x = ((beat - 1) % beatsPerLine) * this.beatContainerWidth() + (beatWidth / 2)
-    const lineComplete = ((this.state.displayBeat - 1) % beatsPerLine) / beatsPerLine
+    const x = ((this.beatOffset() + beat - 1) % beatsPerLine) * this.beatContainerWidth() + (beatWidth / 2)
+    const lineComplete = ((this.beatOffset() + this.state.displayBeat - 1) % beatsPerLine) / beatsPerLine
     const y = (beatRow + 1 - activeRow) * rowHeight - rowHeight * lineComplete + (rowHeight / 2)
     return {x, y}
   }
 
   beatToChordCoordinate (beat) {
     const beatsPerLine = this.beatsPerLine()
-    const activeRow = Math.floor((this.state.displayBeat - 1) / beatsPerLine) + 1
-    const beatRow = Math.floor((beat - 1) / beatsPerLine) + 1
+    const activeRow = Math.floor((this.beatOffset() + this.state.displayBeat - 1) / beatsPerLine) + 1
+    const beatRow = Math.floor((this.beatOffset() + beat - 1) / beatsPerLine) + 1
 
-    const x = ((beat - 1) % beatsPerLine) * this.beatContainerWidth() + chordWidthCorrection
-    const lineComplete = ((this.state.displayBeat - 1) % beatsPerLine) / beatsPerLine
+    const x = ((this.beatOffset() + beat - 1) % beatsPerLine) * this.beatContainerWidth() + chordWidthCorrection
+    const lineComplete = ((this.beatOffset() + this.state.displayBeat - 1) % beatsPerLine) / beatsPerLine
     const y = (beatRow + 1 - activeRow) * rowHeight - rowHeight * lineComplete + chordHeightCorrection
     return {x, y}
   }
 
   beatToLyricCoordinate (beat) {
     const beatsPerLine = this.beatsPerLine()
-    const activeRow = Math.floor((this.state.displayBeat - 1) / beatsPerLine) + 1
-    const beatRow = Math.floor((beat - 1) / beatsPerLine) + 1
+    const activeRow = Math.floor((this.beatOffset() + this.state.displayBeat - 1) / beatsPerLine) + 1
+    const beatRow = Math.floor((this.beatOffset() + beat - 1) / beatsPerLine) + 1
 
-    const x = ((beat - 1) % beatsPerLine) * this.beatContainerWidth() + (beatWidth / 2) + lyricWidthCorrection
-    const lineComplete = ((this.state.displayBeat - 1) % beatsPerLine) / beatsPerLine
+    const x = ((this.beatOffset() + beat - 1) % beatsPerLine) * this.beatContainerWidth() + (beatWidth / 2) + lyricWidthCorrection
+    const lineComplete = ((this.beatOffset() + this.state.displayBeat - 1) % beatsPerLine) / beatsPerLine
     const y = (beatRow + 1 - activeRow) * rowHeight - rowHeight * lineComplete + (rowHeight / 2) + lyricHeightCorrection
     return {x, y}
   }
@@ -106,11 +113,19 @@ class Scroller extends Component {
     if (this.state.drawDebug) {
       this.drawBeatContainer(beat)
     }
-    this.ctx.fillStyle = fillStyle || current ? currentBeatColor : inactiveBeatColor
+    if (fillStyle != undefined) {
+      this.ctx.fillStyle = fillStyle
+    } else if (current > beat) {
+      this.ctx.fillStyle = pastBeatColor
+    } else if (current === beat) {
+      this.ctx.fillStyle = currentBeatColor  
+    } else {
+      this.ctx.fillStyle = inactiveBeatColor
+    }
     this.ctx.strokeStyle = beatOutlineColor
     const {x, y} = this.beatToCoordinate(beat)
     // this.ctx.fillRect(x, y, beatHeight, beatWidth)
-
+    
     this.ctx.beginPath()
     this.ctx.arc(x, y, beatHeight, 0, 2 * Math.PI, false)
 
@@ -119,6 +134,7 @@ class Scroller extends Component {
     this.ctx.stroke()
     this.ctx.fill()
     this.ctx.closePath()
+    //this.ctx.fillText(beat, x, y)
     // this.resetFill()
   }
 
@@ -142,7 +158,7 @@ class Scroller extends Component {
   drawBeats () {
     const [firstBeat, lastBeat] = this.visibleBeats()
     for (let i = firstBeat; i <= lastBeat; i++) {
-      this.drawBeat(i, Math.floor(this.state.displayBeat) === i)
+      this.drawBeat(i, Math.floor(this.state.displayBeat))
     }
     this.setState({firstBeat, lastBeat})
   }
@@ -160,10 +176,11 @@ class Scroller extends Component {
         const measurement = this.ctx.measureText(chord.chord)
         const height = parseInt(chordFontSizeString, 10)
         this.handlers.push({chord, x, y, width: measurement.width, height})
-//        this.ctx.fillRect(x, y, measurement.width, -1 * parseInt(chordFontSizeString))
+        // this.ctx.fillRect(x, y, measurement.width, -1 * parseInt(chordFontSizeString))
+        // this.ctx.fillText(chord.chord + " " + chord.time, x, y)
         this.ctx.fillText(chord.chord, x, y)
         if (this.state.logDebug) {
-          console.log("drawing chord:", chord.chord)
+          console.log("drawing chord:", chord)
         }
       }
     })
@@ -187,7 +204,7 @@ class Scroller extends Component {
   }
 
   drawCursor () {
-    this.drawBeat(this.state.displayBeat, null, 'rgba(0, 100, 100, 0.4)')
+    this.drawBeat(this.state.displayBeat, null, cursorColor)
   }
 
   updateBeats (lastDraw) {
@@ -197,15 +214,16 @@ class Scroller extends Component {
     }
     const now = Date.now()
     const idealBeat = this.props.beat + (now - this.props.beatTime) / this.props.beatLength
-    let displayBeat = this.state.displayBeat || this.props.beat
-    const delta = idealBeat - displayBeat
+    let lastDisplayBeat = this.state.displayBeat || this.props.beat
+    const delta = idealBeat - lastDisplayBeat
     const catchup = delta * (now - lastDraw) / this.props.beatLength
-    displayBeat += (now - lastDraw) / this.props.beatLength + catchup
+    var displayBeat = lastDisplayBeat + (now - lastDraw) / this.props.beatLength + catchup
     this.setState({idealBeat, displayBeat})
   }
 
   draw (lastDraw) {
     if (this.unmounted) return
+    this.resize()
     this.updateBeats(lastDraw)
     this.beat = this.props.beat + (Date.now() - this.props.lastBeat)
     if (Date.now() - this.lastDraw > 50) console.log('SLOW FRAME', Date.now() - this.lastDraw)
@@ -226,17 +244,25 @@ class Scroller extends Component {
     this.ctx.fillStyle = backgroundColor
   }
 
-  componentDidMount () {
-    // TODO handle resize events
-    // TODO figure out how to get it to be exactly 100%, scrap the "- 20"
+  resize() {
     const height = window.innerHeight - $('#canvas').position().top - 20
     const width = window.innerWidth - 20
+    if (this.state.height === height && this.state.width === width) {
+      return
+    }
     if (this.state.logDebug) {
       console.log("h: ", height)
       console.log("w: ", width)
     }
-    this.ctx = document.getElementById('canvas').getContext('2d')
     this.setState({height, width})
+  }
+
+  componentDidMount () {
+    // TODO handle resize events
+    // TODO figure out how to get it to be exactly 100%, scrap the "- 20"
+
+    this.ctx = document.getElementById('canvas').getContext('2d')
+    this.resize()
     window.requestAnimationFrame(() => this.draw())
 
     $('canvas').mousedown((e) => {
