@@ -113,19 +113,19 @@ class Scroller extends Component {
     if (this.state.drawDebug) {
       this.drawBeatContainer(beat)
     }
-    if (fillStyle != undefined) {
+    if (fillStyle !== undefined) {
       this.ctx.fillStyle = fillStyle
     } else if (current > beat) {
       this.ctx.fillStyle = pastBeatColor
     } else if (current === beat) {
-      this.ctx.fillStyle = currentBeatColor  
+      this.ctx.fillStyle = currentBeatColor
     } else {
       this.ctx.fillStyle = inactiveBeatColor
     }
     this.ctx.strokeStyle = beatOutlineColor
     const {x, y} = this.beatToCoordinate(beat)
     // this.ctx.fillRect(x, y, beatHeight, beatWidth)
-    
+
     this.ctx.beginPath()
     this.ctx.arc(x, y, beatHeight, 0, 2 * Math.PI, false)
 

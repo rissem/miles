@@ -2,6 +2,8 @@ import React, { Component } from 'react'
 import $ from 'jquery'
 import utils from './utils'
 import Scroller from './Scroller'
+import Bass from './synth/bass'
+Bass.play()
 
 class Player extends Component {
   constructor (props) {

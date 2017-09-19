@@ -20,7 +20,7 @@ class App extends Component {
 
     // Listen for messages
     this.socket.addEventListener('message', (event)=> {
-      console.log('Message from server', event.data);
+      // console.log('Message from server', event.data);
     });
   }
 
