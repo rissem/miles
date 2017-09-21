@@ -1,3 +1,5 @@
+const audioCtx = window.audioCtx = window.audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+
 const notes = {
   'A': 110,
   'A#': 116.541,
@@ -11,7 +13,6 @@ const notes = {
   'G': 195.998,
   'G#': 207.652
 }
-var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
 const bass = {
   play: (note, time)=>{

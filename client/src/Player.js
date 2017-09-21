@@ -2,10 +2,15 @@ import React, { Component } from 'react'
 import $ from 'jquery'
 import utils from './utils'
 import Scroller from './Scroller'
-import Bass from './synth/bass'
-setInterval(()=>{
-  Bass.play('G')
-}, 400)
+import bass from './synth/bass'
+import drums from './synth/drums'
+
+// setInterval(()=>{
+//   drums.play('bassDrumAcoustic', 0)
+//   drums.play('hihat_closed', 0)
+//   drums.play('snare', 0)
+//   bass.play('E', 0)
+// }, 600)
 
 
 class Player extends Component {
