@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import './App.css'
 import $ from 'jquery'
 import Chooser from './Chooser'
-import './router'
+//import './router'
 
 // for developer convenience
 window.$ = $

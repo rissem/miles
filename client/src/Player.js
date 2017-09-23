@@ -5,10 +5,12 @@ import Scroller from './Scroller'
 import bass from './synth/bass'
 import drums from './synth/drums'
 
+const audioCtx = window.audioCtx = window.audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+
 // setInterval(()=>{
 //   drums.play('bassDrumAcoustic', 0)
-//   drums.play('hihat_closed', 0)
-//   drums.play('snare', 0)
+//   //drums.play('hihat_closed', 0)
+// //  drums.play('snare', 0)
 //   bass.play('E', 0)
 // }, 600)
 
@@ -60,7 +62,29 @@ class Player extends Component {
         'beatLength': (result.data.beats[lastBeat].time - result.data.beats[0].time) / 10 * 1000,
         'quantizedSong': utils.quantizeSong(result.data)
       })
+      this.createArrangement()
     })
+  }
+
+  createArrangement() {
+    const events = []
+    for (let beat = 1; beat <= this.state.rawSong.data.beats.length; beat++){
+      if (beat % 4 === 1 || beat % 4 === 3){
+        events.push({beat, instrument: drums, drum: 'bassDrumAcoustic'})
+      }
+      events.push({beat, instrument: drums, drum: 'hihat_closed'})
+      events.push({beat: beat + 0.5, instrument: drums, drum: 'hihat_closed'})
+      if (beat % 4 === 2 || beat % 4 === 4){
+        events.push({beat, instrument: drums, drum: 'snare'})
+      }
+    }
+
+    const chordToNote = (chord)=> /([A-G])([#b])?.*/.exec(chord)[1]
+
+    this.state.quantizedSong.chords.forEach((chord)=>{
+      events.push({beat: chord.beat, instrument: 'bass', note: chordToNote(chord.chord)})
+    })
+    events.sort((x,y)=> x.beat > y.beat ? 1 : -1 )
   }
 
   render () {
