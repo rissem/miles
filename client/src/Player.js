@@ -37,7 +37,7 @@ class Player extends Component {
   triangle () {
     $.post(`/triangle`).done(()=>console.log("triangle done"))
     this.setState((prevState, props) => {
-      let now = Date.now()
+      let now = audioCtx.currentTime
       let newState = {}
       newState.beat = ++prevState.beat
       newState.beatTime = now
@@ -59,10 +59,46 @@ class Player extends Component {
         'beat': 0,
         'beats': [],
         // average time between first and tenth beats then convert from ms between beats to bpm
-        'beatLength': (result.data.beats[lastBeat].time - result.data.beats[0].time) / 10 * 1000,
+        'beatLength': (result.data.beats[lastBeat].time - result.data.beats[0].time) / 10,
         'quantizedSong': utils.quantizeSong(result.data)
       })
       this.createArrangement()
+      this.startAccompaniment()
+    })
+  }
+
+  startAccompaniment() {
+    const LOOP_TIME = 100
+    const LOOK_AHEAD = 100
+
+    let lastScheduledBeat = 0
+    setInterval(()=>{
+      let beat = this.state.beat
+      beat -= 4
+      const adjustment = (audioCtx.currentTime - this.state.beats[this.state.beats.length - 1]) /  this.state.beatLength
+      beat += adjustment
+      let beat2 = beat + (LOOP_TIME + LOOK_AHEAD) / (this.state.beatLength * 1000)
+      if (beat > lastScheduledBeat){
+        console.error("unscheduled beats", beat, lastScheduledBeat)
+      }
+      const events = this.arrangement.filter((event)=> event.beat > beat && event.beat > lastScheduledBeat && event.beat < beat2)
+      lastScheduledBeat = beat2
+      this.scheduleEvents(events)
+    }, LOOP_TIME)
+  }
+
+  scheduleEvents(events) {
+    const currentBeat = this.state.beat - 4 + (audioCtx.currentTime - this.state.beats[this.state.beats.length - 1]) /  this.state.beatLength
+    const beatToTime = (beat)=>(beat - currentBeat) * this.state.beatLength
+    events.forEach((event)=>{
+      if (event.instrument === 'drums'){
+        console.log('current time', audioCtx.currentTime)
+        console.log('play drums', event.drum, beatToTime(event.beat))
+        drums.play(event.drum, beatToTime(event.beat))
+      }
+      else if (event.instrument === 'bass'){
+       bass.play(event.note, beatToTime(event.beat))
+      }
     })
   }
 
@@ -70,12 +106,12 @@ class Player extends Component {
     const events = []
     for (let beat = 1; beat <= this.state.rawSong.data.beats.length; beat++){
       if (beat % 4 === 1 || beat % 4 === 3){
-        events.push({beat, instrument: drums, drum: 'bassDrumAcoustic'})
+        events.push({beat, instrument: 'drums', drum: 'bassDrumAcoustic'})
       }
-      events.push({beat, instrument: drums, drum: 'hihat_closed'})
-      events.push({beat: beat + 0.5, instrument: drums, drum: 'hihat_closed'})
-      if (beat % 4 === 2 || beat % 4 === 4){
-        events.push({beat, instrument: drums, drum: 'snare'})
+      // events.push({beat, instrument: 'drums', drum: 'hihat_closed'})
+      // events.push({beat: beat + 0.5, instrument: drums, drum: 'hihat_closed'})
+      if (beat % 4 === 2 || beat % 4 === 0){
+        events.push({beat, instrument: 'drums', drum: 'snare'})
       }
     }
 
@@ -85,6 +121,7 @@ class Player extends Component {
       events.push({beat: chord.beat, instrument: 'bass', note: chordToNote(chord.chord)})
     })
     events.sort((x,y)=> x.beat > y.beat ? 1 : -1 )
+    this.arrangement = events
   }
 
   render () {

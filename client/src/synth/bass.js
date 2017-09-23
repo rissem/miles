@@ -33,7 +33,7 @@ const bass = {
     oscillator.connect(gainNode);
     gainNode.connect(biquadFilter)
     biquadFilter.connect(audioCtx.destination)
-    oscillator.start();
+    oscillator.start(audioCtx.currentTime + time);
   }
 }
 

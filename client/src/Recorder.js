@@ -3,6 +3,7 @@ import Scroller from './Scroller'
 import $ from 'jquery'
 import utils from './utils'
 import _ from 'underscore'
+const audioCtx = window.audioCtx = window.audioCtx || new (window.AudioContext || window.webkitAudioContext)();
 
 class Recorder extends Component {
   constructor (props) {
@@ -38,7 +39,7 @@ class Recorder extends Component {
       // TODO also handle numpad for chords
     })
     this.playerTimeInterval = setInterval(() => {
-      this.setState({update: Date.now()})
+      this.setState({update: audioCtx.currentTime})
     }, 200) // force render
   }
 
@@ -169,7 +170,7 @@ class Recorder extends Component {
         <div>Navigate with left/right arrow keys</div>
         <Scroller measure={this.state.measure}
           beat={beat}
-          beatTime={Date.now()}
+          beatTime={audioCtx.currentTime}
           beatLength={beats.length >= 4 ? (beats[beats.length - 1].time - beats[0].time) / beats.length * 1000 : 600}
           song={song}
           chordClick={this.chordClick}
@@ -198,7 +199,7 @@ class BeatRecorder extends Component {
   onBeat () {
     console.log('does this happen?')
     this.setState((prevState, props) => {
-      return {beats: prevState.beats.concat(Date.now())}
+      return {beats: prevState.beats.concat(audioCtx.currentTime)}
     })
   }
 }

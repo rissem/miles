@@ -23,10 +23,11 @@ function getData(filename) {
 
 const drums = {
   play: (drum, time)=>{
+    if (time < 0 )return
     var source = audioCtx.createBufferSource()
     source.buffer = buffers[drum]
     source.connect(audioCtx.destination)
-    source.start(audioCtx.currentTime)
+    source.start(audioCtx.currentTime + time)
   }
 }
 

@@ -1,5 +1,7 @@
 import React, { Component } from 'react'
 import $ from 'jquery'
+const audioCtx = window.audioCtx = window.audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+
 
 // section of code up here that knows nothing about music
 // something like draw(shape, text, color, border, shape, position)
@@ -212,7 +214,7 @@ class Scroller extends Component {
       this.setState({displayBeat: 1})
       return
     }
-    const now = Date.now()
+    const now = audioCtx.currentTime
     const idealBeat = this.props.beat + (now - this.props.beatTime) / this.props.beatLength
     let lastDisplayBeat = this.state.displayBeat || this.props.beat
     const delta = idealBeat - lastDisplayBeat
@@ -225,8 +227,8 @@ class Scroller extends Component {
     if (this.unmounted) return
     this.resize()
     this.updateBeats(lastDraw)
-    this.beat = this.props.beat + (Date.now() - this.props.lastBeat)
-    if (Date.now() - this.lastDraw > 50) console.log('SLOW FRAME', Date.now() - this.lastDraw)
+    this.beat = this.props.beat + (audioCtx.currentTime - this.props.lastBeat)
+    if (audioCtx.currentTime - this.lastDraw > 50) console.log('SLOW FRAME', audioCtx.currentTime - this.lastDraw)
     this.ctx.clearRect(0, 0, this.state.width, this.state.height)
 
     // this.beatMeta = this.calculateBeatMeta(this.beat)
@@ -237,7 +239,7 @@ class Scroller extends Component {
     this.drawChords()
     this.drawCursor()
     window.requestAnimationFrame(() => this.draw(this.lastDraw))
-    this.lastDraw = Date.now()
+    this.lastDraw = audioCtx.currentTime
   }
 
   resetFill () {
