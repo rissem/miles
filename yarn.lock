@@ -295,9 +295,9 @@ eslint-plugin-jsx@0.0.2:
     html-tags "1"
     svg-tags "1"
 
-eslint-plugin-promise@^3.4.0:
-  version "3.5.0"
-  resolved "https://registry.yarnpkg.com/eslint-plugin-promise/-/eslint-plugin-promise-3.5.0.tgz#78fbb6ffe047201627569e85a6c5373af2a68fca"
+eslint-plugin-promise@^4.0.1:
+  version "4.0.1"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-promise/-/eslint-plugin-promise-4.0.1.tgz#2d074b653f35a23d1ba89d8e976a985117d1c6a2"
 
 eslint-plugin-react@3.4.2:
   version "3.4.2"
