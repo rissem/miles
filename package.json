@@ -3,7 +3,7 @@
   "devDependencies": {
     "eslint": "^3.13.0",
     "eslint-config-react": "^1.1.7",
-    "eslint-config-standard": "^6.2.1",
+    "eslint-config-standard": "^7.1.0",
     "eslint-plugin-jsx": "0.0.2",
     "eslint-plugin-promise": "^3.4.0",
     "eslint-plugin-react": "^6.9.0",
