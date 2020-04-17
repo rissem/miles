@@ -1,6 +1,6 @@
 # miles
 
-0. Install Docker https://store.docker.com/editions/community/docker-ce-desktop-mac
+1. Install Docker https://store.docker.com/editions/community/docker-ce-desktop-mac
 1. Clone this repo
 1. Add some songs into the `api/public` directory
 1. `docker-compose up`
